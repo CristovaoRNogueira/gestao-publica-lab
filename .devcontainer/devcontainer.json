@@ -1,0 +1,10 @@
+{
+  "name": "gestao-publica-lab",
+  "dockerComposeFile": "../compose.yaml",
+  "service": "workspace",
+  "workspaceFolder": "/workspaces/gestao-publica-lab",
+  "remoteUser": "vscode",
+  "overrideCommand": false,
+  "shutdownAction": "stopCompose",
+  "postCreateCommand": "composer install --no-interaction && if [ ! -f .env ]; then cp .env.example .env && php artisan key:generate --force; fi && php artisan migrate --force && if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm --version; fi"
+}

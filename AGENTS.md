@@ -117,3 +117,17 @@ Package manager oficial:
 `pnpm`
 
 Nunca usar `npm install` para instalar dependências do projeto quando uma operação equivalente com `pnpm` existir.
+
+## Ambiente canônico
+
+Docker Compose é o ambiente canônico de desenvolvimento. Ferramentas do projeto
+devem ser executadas no serviço `workspace`; não depender de PHP, Composer,
+Node.js, pnpm, PostgreSQL ou Valkey instalados no host.
+
+Comandos típicos:
+
+```sh
+docker compose exec workspace php artisan test
+docker compose exec workspace composer install
+docker compose exec workspace pnpm --version
+```
