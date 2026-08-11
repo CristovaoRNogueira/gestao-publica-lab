@@ -2,6 +2,8 @@ name: gestao-publica-lab
 
 services:
   workspace:
+    ports:
+      - "127.0.0.1:5173:5173"
     build:
       context: .
       dockerfile: docker/workspace/Dockerfile
