@@ -11,7 +11,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(\App\Modules\Tenancy\Context\TenantContext::class, function () {
+            return new \App\Modules\Tenancy\Context\TenantContext();
+        });
+
+        $this->app->singleton(\App\Modules\Tenancy\Services\TenantResolver::class, function () {
+            return new \App\Modules\Tenancy\Services\TenantResolver();
+        });
     }
 
     /**
