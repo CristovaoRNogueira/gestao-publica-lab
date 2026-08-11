@@ -94,3 +94,26 @@ Preferir a solução mais simples que satisfaça os requisitos.
 
 Se uma decisão importante não puder ser tomada com segurança,
 interromper a implementação e solicitar orientação.
+
+## Ambiente de desenvolvimento
+
+O projeto utiliza:
+
+- Node.js 24.19.0
+- pnpm 11.21.0
+
+O arquivo `.node-version` define a versão oficial do Node.js.
+
+Antes de executar comandos relacionados ao frontend:
+
+1. Verifique a versão do Node com `node -v`.
+2. Verifique a versão do pnpm com `pnpm --version`.
+3. Se o ambiente estiver utilizando outra versão, não altere ou instale versões automaticamente.
+4. Não instalar Node, npm, pnpm ou gerenciadores de versões globalmente.
+5. Não modificar `.node-version` sem autorização.
+
+Package manager oficial:
+
+`pnpm`
+
+Nunca usar `npm install` para instalar dependências do projeto quando uma operação equivalente com `pnpm` existir.
