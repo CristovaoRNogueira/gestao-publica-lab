@@ -94,3 +94,40 @@ Preferir a solução mais simples que satisfaça os requisitos.
 
 Se uma decisão importante não puder ser tomada com segurança,
 interromper a implementação e solicitar orientação.
+
+## Ambiente de desenvolvimento
+
+O projeto utiliza:
+
+- Node.js 24.19.0
+- pnpm 11.21.0
+
+O arquivo `.node-version` define a versão oficial do Node.js.
+
+Antes de executar comandos relacionados ao frontend:
+
+1. Verifique a versão do Node com `node -v`.
+2. Verifique a versão do pnpm com `pnpm --version`.
+3. Se o ambiente estiver utilizando outra versão, não altere ou instale versões automaticamente.
+4. Não instalar Node, npm, pnpm ou gerenciadores de versões globalmente.
+5. Não modificar `.node-version` sem autorização.
+
+Package manager oficial:
+
+`pnpm`
+
+Nunca usar `npm install` para instalar dependências do projeto quando uma operação equivalente com `pnpm` existir.
+
+## Ambiente canônico
+
+Docker Compose é o ambiente canônico de desenvolvimento. Ferramentas do projeto
+devem ser executadas no serviço `workspace`; não depender de PHP, Composer,
+Node.js, pnpm, PostgreSQL ou Valkey instalados no host.
+
+Comandos típicos:
+
+```sh
+docker compose exec workspace php artisan test
+docker compose exec workspace composer install
+docker compose exec workspace pnpm --version
+```
