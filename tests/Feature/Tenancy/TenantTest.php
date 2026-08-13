@@ -70,10 +70,13 @@ class TenantTest extends TestCase
         $user = User::factory()->create();
         $user->tenants()->attach($tenant1);
 
-        // Try to access tenant 2
-        $response = $this->actingAs($user)->get('/_test/tenant?tenant_id=' . $tenant2->id);
+        // Try to access tenant 2 via session
+        $response = $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenant2->id])
+            ->get('/_test/tenant');
 
         $response->assertStatus(403);
+        $response->assertSessionMissing('tenant_id');
     }
 
     public function test_inactive_tenant_is_rejected()
@@ -87,9 +90,12 @@ class TenantTest extends TestCase
         $user = User::factory()->create();
         $user->tenants()->attach($tenant);
 
-        $response = $this->actingAs($user)->get('/_test/tenant?tenant_id=' . $tenant->id);
+        $response = $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->get('/_test/tenant');
 
         $response->assertStatus(403);
+        $response->assertSessionMissing('tenant_id');
     }
 
     public function test_tenant_context_returns_correct_tenant()
@@ -103,7 +109,9 @@ class TenantTest extends TestCase
         $user = User::factory()->create();
         $user->tenants()->attach($tenant);
 
-        $response = $this->actingAs($user)->get('/_test/tenant?tenant_id=' . $tenant->id);
+        $response = $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->get('/_test/tenant');
 
         $response->assertStatus(200);
         $response->assertJson([
