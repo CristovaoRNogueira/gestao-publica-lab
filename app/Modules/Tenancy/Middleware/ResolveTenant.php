@@ -23,11 +23,12 @@ class ResolveTenant
             abort(401, 'Unauthenticated.');
         }
 
-        $tenantIdentifier = $request->input('tenant_id') ?? $request->route('tenant');
+        $tenantId = $request->session()->get('tenant_id');
 
-        $tenant = $this->resolver->resolve($tenantIdentifier, $user);
+        $tenant = $this->resolver->resolve($tenantId, $user);
 
         if (!$tenant) {
+            $request->session()->forget('tenant_id');
             abort(403, 'Unauthorized or invalid tenant.');
         }
 
