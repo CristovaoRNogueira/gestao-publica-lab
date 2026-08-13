@@ -21,4 +21,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+
+    Route::middleware(['auth', \App\Modules\Tenancy\Middleware\ResolveTenant::class])->group(function () {
+        Route::resource('secretarias', \App\Modules\Secretaria\Http\Controllers\SecretariaController::class)
+            ->only(['index', 'store', 'update']);
+    });
 });
