@@ -51,14 +51,26 @@ export default function Dashboard() {
                             </p>
                         </div>
                     ) : auth.tenants.length > 1 ? (
-                        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
-                            <h2 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
-                                Seleção de organização necessária
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                                Selecione uma organização
                             </h2>
-                            <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                                Você pertence a {auth.tenants.length} organizações.
-                                A seleção de tenant será implementada em etapa futura.
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                Você pertence a {auth.tenants.length} organizações. Selecione uma para continuar.
                             </p>
+                            <ul className="space-y-2">
+                                {auth.tenants.map((t) => (
+                                    <li key={t.id}>
+                                        <button
+                                            onClick={() => router.post('/tenant/select', { tenant_id: t.id })}
+                                            className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                        >
+                                            <span className="font-medium text-gray-900 dark:text-white">{t.name}</span>
+                                            <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">{t.slug}</span>
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
                     ) : (
                         <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
