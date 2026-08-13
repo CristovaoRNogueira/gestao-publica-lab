@@ -2,26 +2,59 @@
 
 ## Projeto
 
-Laboratório para avaliação de agentes de desenvolvimento.
+Repositório oficial de desenvolvimento do Gestão Pública Lab.
 
-O objetivo é comparar diferentes agentes executando a mesma tarefa
-em condições equivalentes.
+A aplicação está em desenvolvimento ativo e não deve ser tratada como
+produção, mas toda a base de código deve seguir padrão de produção.
 
-Este repositório NÃO é ainda o projeto de produção.
-É exclusivamente um ambiente de teste.
+O desenvolvimento é conduzido colaborativamente por agentes de IA,
+sob supervisão do responsável pelo projeto.
 
-## Objetivo do teste
+## Objetivo
 
-Comparar agentes de desenvolvimento implementando a mesma
+Desenvolver o produto Gestão Pública Lab com qualidade de produção.
+
+Como objetivo secundário, o projeto serve de referência para avaliação
+comparativa de agentes de desenvolvimento implementando a mesma
 especificação técnica.
 
-Os agentes avaliados inicialmente são:
+Os agentes participantes são:
 
 - OpenAI Codex
 - Google Antigravity
+- Claude
+- Modelos Gemini disponibilizados pelo Antigravity
 
-Ambos devem receber a mesma especificação e trabalhar em branches
-independentes.
+Cada agente deve receber a especificação da tarefa e trabalhar
+em uma branch própria.
+
+## Agentes de desenvolvimento
+
+O projeto é desenvolvido colaborativamente pelos seguintes agentes:
+
+- OpenAI Codex
+- Google Antigravity
+- Claude
+- Modelos Gemini disponibilizados pelo Antigravity
+
+Todos são agentes principais de desenvolvimento.
+Nenhum agente possui autoridade superior aos demais.
+
+A autoridade do projeto é definida pelo responsável pelo projeto,
+por este `AGENTS.md`, pelas decisões arquiteturais registradas em
+`docs/architecture/` e pelas especificações técnicas do projeto.
+
+### Regras de convivência entre agentes
+
+- Todo agente deve ler e seguir integralmente este arquivo (`AGENTS.md`) antes de iniciar qualquer tarefa.
+- Nenhum agente pode alterar silenciosamente uma decisão arquitetural.
+- Mudanças arquiteturais relevantes devem ser propostas e aprovadas antes da implementação.
+- Decisões arquiteturais permanentes devem ser registradas em `docs/architecture/`.
+- Agentes diferentes não devem editar simultaneamente o mesmo checkout.
+- Cada tarefa deve utilizar uma branch própria, independentemente do agente responsável.
+- Commit, push e merge exigem autorização explícita do responsável pelo projeto.
+- Docker Compose (`workspace`) continua sendo o ambiente canônico de desenvolvimento.
+- `pnpm` continua sendo o package manager oficial para dependências JavaScript/Node.js.
 
 ## Regras gerais
 
@@ -38,6 +71,8 @@ independentes.
 - Informar comandos executados.
 - Informar testes executados.
 - Informar arquivos criados e modificados.
+- O agente revisor não deve modificar a implementação durante a revisão,
+  salvo autorização explícita.
 
 ## Stack do teste
 
@@ -54,23 +89,28 @@ Modular Monolith.
 
 Não utilizar microserviços.
 
+Decisões arquiteturais com impacto sobre múltiplos módulos ou
+infrastrutura central devem ser documentadas em `docs/architecture/`
+antes ou junto da implementação.
+
 ## Git
 
-- A branch `main` deve permanecer intacta durante os testes.
-- Cada agente deve trabalhar em sua própria branch.
+- `main` representa a linha estável do projeto. Desenvolvimento e
+  experimentação devem ocorrer em branches de tarefa. Alterações em
+  `main` devem ocorrer por Pull Request ou processo explicitamente
+  autorizado.
+- Cada tarefa deve utilizar uma branch própria, nomeada de acordo com
+  a tarefa, independentemente do agente responsável.
 - Agentes não devem criar commits automaticamente.
 - Agentes não devem fazer push automaticamente.
 - Não realizar merge automaticamente.
 
 ## Branches
 
-Codex:
+Cada tarefa deve utilizar uma branch própria, nomeada de acordo com
+a tarefa, independentemente do agente responsável.
 
-`test/codex`
-
-Antigravity:
-
-`test/antigravity`
+Não existem branches permanentes por agente.
 
 ## Critério de qualidade
 
