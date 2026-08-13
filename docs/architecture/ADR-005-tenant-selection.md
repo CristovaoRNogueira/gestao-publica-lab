@@ -28,7 +28,12 @@ Para o fluxo web autenticado com Inertia, o tenant ativo é armazenado na
   `tenant_id`. O usuário está autenticado mas sem acesso a operações
   tenant-aware.
 - Se o usuário pertence a **múltiplos tenants ativos**, a sessão não
-  contém `tenant_id` até que o usuário realize a seleção.
+  contém `tenant_id` até que o usuário realize a seleção explícita.
+  A seleção ocorre via `POST /tenant/select { tenant_id }` a partir
+  do Dashboard, que exibe a lista de tenants disponíveis via shared
+  props (`auth.tenants`). O `TenantResolver` valida existência, estado
+  ativo e membership antes de gravar `tenant_id` na sessão.
+
 - Em cada requisição tenant-aware, o `ResolveTenant` middleware lê o
   `tenant_id` da sessão e valida via `TenantResolver`.
 
@@ -51,5 +56,4 @@ Para o fluxo web autenticado com Inertia, o tenant ativo é armazenado na
 ## Fora de escopo desta ADR
 
 - Mecanismos de seleção de tenant para clientes API (header, JWT claim etc.).
-- UI de seleção de tenant para múltiplos tenants.
 - Múltiplos tenants simultâneos na mesma sessão.
