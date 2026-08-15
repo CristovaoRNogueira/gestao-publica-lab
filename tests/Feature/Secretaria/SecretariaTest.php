@@ -121,6 +121,108 @@ class SecretariaTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // Create (create)
+    // -------------------------------------------------------------------------
+
+    public function test_member_can_access_create_page_with_permission(): void
+    {
+        $tenant = $this->createActiveTenant();
+        $user = User::factory()->create();
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $this->grantPermission($tenant, $membership, PermissionSlug::SECRETARIAS_CREATE->value);
+
+        $response = $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->get('/secretarias/create');
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (AssertableInertia $page) => $page->component('Secretaria/Create'));
+    }
+
+    public function test_member_cannot_access_create_page_without_permission(): void
+    {
+        $tenant = $this->createActiveTenant();
+        $user = User::factory()->create();
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $response = $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->get('/secretarias/create');
+
+        $response->assertStatus(403);
+    }
+
+    // -------------------------------------------------------------------------
+    // Edit (edit)
+    // -------------------------------------------------------------------------
+
+    public function test_member_can_access_edit_page_with_permission(): void
+    {
+        $tenant = $this->createActiveTenant();
+        $user = User::factory()->create();
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $this->grantPermission($tenant, $membership, PermissionSlug::SECRETARIAS_UPDATE->value);
+
+        $secretaria = Secretaria::factory()->create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Secretaria A',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->get("/secretarias/{$secretaria->id}/edit");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Secretaria/Edit')
+            ->where('secretaria.id', $secretaria->id)
+        );
+    }
+
+    public function test_member_cannot_access_edit_page_without_permission(): void
+    {
+        $tenant = $this->createActiveTenant();
+        $user = User::factory()->create();
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $secretaria = Secretaria::factory()->create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Secretaria A',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->get("/secretarias/{$secretaria->id}/edit");
+
+        $response->assertStatus(403);
+    }
+
+    public function test_edit_cross_tenant_blocks_access(): void
+    {
+        $tenantA = $this->createActiveTenant('tenant-a');
+        $tenantB = $this->createActiveTenant('tenant-b');
+
+        $user = User::factory()->create();
+        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $this->grantPermission($tenantA, $membershipA, PermissionSlug::SECRETARIAS_UPDATE->value);
+
+        $secretariaB = Secretaria::factory()->create([
+            'tenant_id' => $tenantB->id,
+            'name' => 'Secretaria B',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenantA->id])
+            ->get("/secretarias/{$secretariaB->id}/edit");
+
+        $response->assertStatus(403);
+    }
+
+    // -------------------------------------------------------------------------
     // Store (create)
     // -------------------------------------------------------------------------
 

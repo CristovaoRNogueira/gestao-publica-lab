@@ -36,6 +36,11 @@ class SecretariaController extends Controller
             'secretarias' => $secretarias,
         ]);
     }
+    public function create(): Response
+    {
+        $this->authorize('create', Secretaria::class);
+        return Inertia::render('Secretaria/Create');
+    }
 
     public function store(SaveSecretariaRequest $request): RedirectResponse
     {
@@ -64,6 +69,19 @@ class SecretariaController extends Controller
         ]);
 
         return redirect()->route('secretarias.index')->with('success', 'Secretaria criada com sucesso.');
+    }
+    public function edit(Secretaria $secretaria): Response
+    {
+        $this->authorize('update', $secretaria);
+        return Inertia::render('Secretaria/Edit', [
+            'secretaria' => [
+                'id' => $secretaria->id,
+                'name' => $secretaria->name,
+                'slug' => $secretaria->slug,
+                'description' => $secretaria->description,
+                'is_active' => $secretaria->is_active,
+            ]
+        ]);
     }
 
     public function update(SaveSecretariaRequest $request, Secretaria $secretaria): RedirectResponse
