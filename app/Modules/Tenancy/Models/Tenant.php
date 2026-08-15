@@ -4,6 +4,7 @@ namespace App\Modules\Tenancy\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Modules\Tenancy\Models\Role;
 
 class Tenant extends Model
 {
@@ -22,5 +23,12 @@ class Tenant extends Model
     public function memberships(): HasMany
     {
         return $this->hasMany(Membership::class);
+    }
+    /**
+     * * Get the roles owned by the tenant.
+     * */
+    public function roles(): HasMany
+    {
+    return $this->hasMany(Role::class);
     }
 }
