@@ -15,17 +15,20 @@ class SecretariaPolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->context->getTenant() !== null;
+        return $this->context->getTenant() !== null
+            && ($this->context->getMembership()?->hasPermission('secretarias.view') ?? false);
     }
 
     public function create(User $user): bool
     {
-        return $this->context->getTenant() !== null;
+        return $this->context->getTenant() !== null
+            && ($this->context->getMembership()?->hasPermission('secretarias.create') ?? false);
     }
 
     public function update(User $user, Secretaria $secretaria): bool
     {
-        return $this->belongsToActiveTenant($secretaria);
+        return $this->belongsToActiveTenant($secretaria)
+            && ($this->context->getMembership()?->hasPermission('secretarias.update') ?? false);
     }
 
     private function belongsToActiveTenant(Secretaria $secretaria): bool

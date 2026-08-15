@@ -5,6 +5,8 @@ namespace Tests\Feature\Secretaria;
 use App\Models\User;
 use App\Modules\Secretaria\Models\Secretaria;
 use App\Modules\Tenancy\Models\Membership;
+use App\Modules\Tenancy\Models\Permission;
+use App\Modules\Tenancy\Models\Role;
 use App\Modules\Tenancy\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -21,6 +23,19 @@ class SecretariaTest extends TestCase
             'slug' => $slug,
             'is_active' => true,
         ]);
+    }
+
+    private function grantPermission(Tenant $tenant, Membership $membership, string $permissionSlug): void
+    {
+        $role = Role::firstOrCreate(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
+        $permission = Permission::firstOrCreate(['name' => $permissionSlug, 'slug' => $permissionSlug]);
+        if (!$role->permissions->contains($permission->id)) {
+            $role->permissions()->attach($permission);
+        }
+        if (!$membership->roles->contains($role->id)) {
+            $membership->roles()->attach($role);
+        }
+        $membership->load('roles.permissions');
     }
 
     // -------------------------------------------------------------------------
@@ -42,11 +57,26 @@ class SecretariaTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_member_can_list_secretarias(): void
+    public function test_member_cannot_list_secretarias_without_permission(): void
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
         Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $response = $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->get('/secretarias');
+
+        $response->assertStatus(403);
+    }
+
+    public function test_member_can_list_secretarias_with_permission(): void
+    {
+        $tenant = $this->createActiveTenant();
+        $user = User::factory()->create();
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $this->grantPermission($tenant, $membership, 'secretarias.view');
 
         Secretaria::factory()->create([
             'tenant_id' => $tenant->id,
@@ -71,8 +101,10 @@ class SecretariaTest extends TestCase
         $tenantB = $this->createActiveTenant('tenant-b');
 
         $user = User::factory()->create();
-        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
         Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $this->grantPermission($tenantA, $membershipA, 'secretarias.view');
 
         Secretaria::factory()->create(['tenant_id' => $tenantA->id, 'name' => 'A1']);
         Secretaria::factory()->create(['tenant_id' => $tenantA->id, 'name' => 'A2']);
@@ -91,11 +123,28 @@ class SecretariaTest extends TestCase
     // Store (create)
     // -------------------------------------------------------------------------
 
-    public function test_member_can_create_secretaria(): void
+    public function test_member_cannot_create_secretaria_without_permission(): void
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
         Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $response = $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->post('/secretarias', [
+                'name' => 'Nova Secretaria',
+            ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_member_can_create_secretaria_with_permission(): void
+    {
+        $tenant = $this->createActiveTenant();
+        $user = User::factory()->create();
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $this->grantPermission($tenant, $membership, 'secretarias.create');
 
         $response = $this->actingAs($user)
             ->withSession(['tenant_id' => $tenant->id])
@@ -119,7 +168,9 @@ class SecretariaTest extends TestCase
         $tenantB = $this->createActiveTenant('tenant-b');
 
         $user = User::factory()->create();
-        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $this->grantPermission($tenantA, $membershipA, 'secretarias.create');
 
         $this->actingAs($user)
             ->withSession(['tenant_id' => $tenantA->id])
@@ -144,7 +195,9 @@ class SecretariaTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
-        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $this->grantPermission($tenant, $membership, 'secretarias.create');
 
         // First one
         $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
@@ -163,8 +216,11 @@ class SecretariaTest extends TestCase
         $tenantA = $this->createActiveTenant('a');
         $tenantB = $this->createActiveTenant('b');
         $user = User::factory()->create();
-        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
-        Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membershipB = Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $this->grantPermission($tenantA, $membershipA, 'secretarias.create');
+        $this->grantPermission($tenantB, $membershipB, 'secretarias.create');
 
         $this->actingAs($user)->withSession(['tenant_id' => $tenantA->id])
             ->post('/secretarias', ['name' => 'Saúde']);
@@ -180,11 +236,34 @@ class SecretariaTest extends TestCase
     // Update (update)
     // -------------------------------------------------------------------------
 
-    public function test_member_can_update_own_secretaria(): void
+    public function test_member_cannot_update_secretaria_without_permission(): void
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
         Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $secretaria = Secretaria::factory()->create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Old Name',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->put("/secretarias/{$secretaria->id}", [
+                'name' => 'New Name',
+                'is_active' => false,
+            ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_member_can_update_own_secretaria_with_permission(): void
+    {
+        $tenant = $this->createActiveTenant();
+        $user = User::factory()->create();
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $this->grantPermission($tenant, $membership, 'secretarias.update');
 
         $secretaria = Secretaria::factory()->create([
             'tenant_id' => $tenant->id,
@@ -206,13 +285,15 @@ class SecretariaTest extends TestCase
         ]);
     }
 
-    public function test_member_cannot_update_secretaria_of_other_tenant(): void
+    public function test_member_cannot_update_secretaria_of_other_tenant_even_with_permission(): void
     {
         $tenantA = $this->createActiveTenant('a');
         $tenantB = $this->createActiveTenant('b');
         $user = User::factory()->create();
-        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
         Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $this->grantPermission($tenantA, $membershipA, 'secretarias.update');
 
         $secretariaB = Secretaria::factory()->create([
             'tenant_id' => $tenantB->id,
@@ -242,8 +323,10 @@ class SecretariaTest extends TestCase
         $tenantB = $this->createActiveTenant('tb');
 
         $user = User::factory()->create();
-        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
         Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'is_active' => true]);
+
+        $this->grantPermission($tenantA, $membershipA, 'secretarias.update');
 
         $secretariaA = Secretaria::factory()->create(['tenant_id' => $tenantA->id, 'name' => 'A']);
         $secretariaB = Secretaria::factory()->create(['tenant_id' => $tenantB->id, 'name' => 'B']);
