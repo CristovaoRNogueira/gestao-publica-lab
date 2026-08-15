@@ -9,6 +9,7 @@ enum PermissionSlug: string
     case ROLES_CREATE = 'roles.create';
     case ROLES_UPDATE = 'roles.update';
     case ROLES_DELETE = 'roles.delete';
+    case ROLES_PERMISSIONS_MANAGE = 'roles.permissions.manage';
     case SECRETARIAS_VIEW = 'secretarias.view';
     case SECRETARIAS_CREATE = 'secretarias.create';
     case SECRETARIAS_UPDATE = 'secretarias.update';
@@ -21,6 +22,7 @@ enum PermissionSlug: string
             self::ROLES_CREATE => 'Criar Papéis',
             self::ROLES_UPDATE => 'Editar Papéis',
             self::ROLES_DELETE => 'Excluir Papéis',
+            self::ROLES_PERMISSIONS_MANAGE => 'Gerenciar Permissões de Papéis',
             self::SECRETARIAS_VIEW => 'Visualizar Secretarias',
             self::SECRETARIAS_CREATE => 'Criar Secretarias',
             self::SECRETARIAS_UPDATE => 'Editar Secretarias',
@@ -31,10 +33,11 @@ enum PermissionSlug: string
     {
         return match ($this) {
             self::MEMBERSHIPS_ROLES_MANAGE => 'Permite gerenciar a atribuição e revogação de papéis das associações dentro do tenant.',
-            self::ROLES_VIEW => 'Permite visualizar a lista e os detalhes dos papéis do tenant.',
+            self::ROLES_VIEW => 'Permite visualizar todos os papéis do tenant.',
             self::ROLES_CREATE => 'Permite criar novos papéis no tenant.',
             self::ROLES_UPDATE => 'Permite atualizar os dados dos papéis do tenant.',
             self::ROLES_DELETE => 'Permite excluir papéis do tenant.',
+            self::ROLES_PERMISSIONS_MANAGE => 'Permite gerenciar as permissões atreladas a cada papel do tenant.',
             self::SECRETARIAS_VIEW => 'Permite visualizar a lista e os detalhes das secretarias do tenant.',
             self::SECRETARIAS_CREATE => 'Permite criar novas secretarias no tenant.',
             self::SECRETARIAS_UPDATE => 'Permite atualizar os dados das secretarias do tenant.',

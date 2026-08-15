@@ -47,6 +47,18 @@ class RolePolicy
             && ($this->context->getMembership()?->hasPermission(PermissionSlug::ROLES_DELETE->value) ?? false);
     }
 
+    public function viewPermissions(User $user, Role $role): bool
+    {
+        return $this->belongsToActiveTenant($role)
+            && ($this->context->getMembership()?->hasPermission(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value) ?? false);
+    }
+
+    public function managePermissions(User $user, Role $role): bool
+    {
+        return $this->belongsToActiveTenant($role)
+            && ($this->context->getMembership()?->hasPermission(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value) ?? false);
+    }
+
     private function belongsToActiveTenant(Role $role): bool
     {
         $tenantId = $this->context->getTenant()?->id;

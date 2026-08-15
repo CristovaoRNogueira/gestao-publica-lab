@@ -45,9 +45,10 @@ class CreateTenantService
                 PermissionSlug::ROLES_CREATE->value,
                 PermissionSlug::ROLES_UPDATE->value,
                 PermissionSlug::ROLES_DELETE->value,
+                PermissionSlug::ROLES_PERMISSIONS_MANAGE->value,
             ])->get();
 
-            if ($permissions->count() !== 5) {
+            if ($permissions->count() !== 6) {
                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Not all required permissions were found in the catalog.');
             }
 
