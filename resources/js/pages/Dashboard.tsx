@@ -1,89 +1,51 @@
-import { Head, usePage, router } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
+import { AppLayout } from '../layouts/AppLayout';
+import { EmptyState } from '../components/ui/EmptyState';
 
 interface AuthProps {
     auth: {
         user: { id: number; name: string; email: string } | null;
         tenant: { id: number; name: string; slug: string } | null;
         tenants: Array<{ id: number; name: string; slug: string }>;
+        capabilities: string[];
     };
 }
 
 export default function Dashboard() {
     const { auth } = usePage<AuthProps>().props;
 
-    function handleLogout() {
-        router.post('/logout');
-    }
-
     return (
         <>
             <Head title="Dashboard" />
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex justify-between h-16 items-center">
-                            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                Gestão Pública Lab
-                            </h1>
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">
-                                    {auth.user?.name}
-                                </span>
-                                <button
-                                    onClick={handleLogout}
-                                    className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors"
-                                >
-                                    Sair
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </nav>
 
-                <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                    {auth.tenant ? (
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                                {auth.tenant.name}
-                            </h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Tenant ativo: {auth.tenant.slug}
-                            </p>
-                        </div>
-                    ) : auth.tenants.length > 1 ? (
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                                Selecione uma organização
-                            </h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                                Você pertence a {auth.tenants.length} organizações. Selecione uma para continuar.
-                            </p>
-                            <ul className="space-y-2">
-                                {auth.tenants.map((t) => (
-                                    <li key={t.id}>
-                                        <button
-                                            onClick={() => router.post('/tenant/select', { tenant_id: t.id })}
-                                            className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                        >
-                                            <span className="font-medium text-gray-900 dark:text-white">{t.name}</span>
-                                            <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">{t.slug}</span>
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ) : (
-                        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-                            <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Sem organização vinculada
-                            </h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Sua conta não está vinculada a nenhuma organização ativa.
-                            </p>
-                        </div>
-                    )}
-                </main>
+            <div className="max-w-7xl mx-auto">
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+                </div>
+
+                {auth.tenant ? (
+                    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                            Bem-vindo, {auth.user?.name}
+                        </h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Você está logado na organização <span className="font-medium text-gray-900 dark:text-white">{auth.tenant.name}</span>.
+                        </p>
+                    </div>
+                ) : (
+                    <EmptyState
+                        title="Nenhuma organização selecionada"
+                        description="Selecione uma organização no menu superior para começar."
+                        icon={
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                        }
+                    />
+                )}
             </div>
         </>
     );
 }
+
+Dashboard.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

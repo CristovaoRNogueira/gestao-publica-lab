@@ -42,6 +42,27 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $tenantId = $request->session()->get('tenant_id');
+
+        $activeTenant = null;
+        $capabilities = [];
+
+        if ($user && $tenantId) {
+            $resolved = $this->resolver->resolve($tenantId, $user);
+            if ($resolved) {
+                $activeTenant = [
+                    'id' => $resolved->tenant->id,
+                    'name' => $resolved->tenant->name,
+                    'slug' => $resolved->tenant->slug,
+                ];
+                $capabilities = $resolved->membership->roles
+                    ->flatMap->permissions
+                    ->pluck('slug')
+                    ->unique()
+                    ->values()
+                    ->toArray();
+            }
+        }
 
         return array_merge(parent::share($request), [
             'auth' => [
@@ -50,7 +71,7 @@ class HandleInertiaRequests extends Middleware
                     'name' => $user->name,
                     'email' => $user->email,
                 ] : null,
-                'tenant' => $this->activeTenant($request),
+                'tenant' => $activeTenant,
                 'tenants' => $user
                     ? $user->memberships()
                         ->where('is_active', true)
@@ -60,37 +81,16 @@ class HandleInertiaRequests extends Middleware
                         ->pluck('tenant')
                         ->toArray()
                     : [],
+                'capabilities' => $capabilities,
+            ],
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
+                'warning' => $request->session()->get('warning'),
+                'info' => $request->session()->get('info'),
             ],
         ]);
     }
 
-    /**
-     * Get the active tenant from the session, if any.
-     */
-    private function activeTenant(Request $request): ?array
-    {
-        $tenantId = $request->session()->get('tenant_id');
 
-        if (! $tenantId) {
-            return null;
-        }
-
-        $user = $request->user();
-
-        if (! $user) {
-            return null;
-        }
-
-        $resolved = $this->resolver->resolve($tenantId, $user);
-
-        if (! $resolved) {
-            return null;
-        }
-
-        return [
-            'id' => $resolved->tenant->id,
-            'name' => $resolved->tenant->name,
-            'slug' => $resolved->tenant->slug,
-        ];
-    }
 }
