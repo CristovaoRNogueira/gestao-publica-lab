@@ -25,5 +25,11 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['auth', \App\Modules\Tenancy\Middleware\ResolveTenant::class])->group(function () {
         Route::resource('secretarias', \App\Modules\Secretaria\Http\Controllers\SecretariaController::class)
             ->only(['index', 'store', 'update']);
+
+        Route::post('memberships/{membership}/roles', [\App\Modules\Tenancy\Http\Controllers\MembershipRoleController::class, 'store'])
+            ->name('memberships.roles.store');
+
+        Route::delete('memberships/{membership}/roles/{role}', [\App\Modules\Tenancy\Http\Controllers\MembershipRoleController::class, 'destroy'])
+            ->name('memberships.roles.destroy')->scopeBindings();
     });
 });
