@@ -33,5 +33,14 @@ Route::middleware('auth')->group(function () {
             ->name('memberships.roles.destroy')->scopeBindings();
         Route::resource('roles', \App\Modules\Tenancy\Http\Controllers\RoleController::class)
             ->only(['index', 'show', 'store', 'update', 'destroy']);
+
+        Route::get('roles/{role}/permissions', [\App\Modules\Tenancy\Http\Controllers\RolePermissionController::class, 'index'])
+            ->name('roles.permissions.index');
+
+        Route::post('roles/{role}/permissions', [\App\Modules\Tenancy\Http\Controllers\RolePermissionController::class, 'store'])
+            ->name('roles.permissions.store');
+
+        Route::delete('roles/{role}/permissions/{permission}', [\App\Modules\Tenancy\Http\Controllers\RolePermissionController::class, 'destroy'])
+            ->name('roles.permissions.destroy');
     });
 });

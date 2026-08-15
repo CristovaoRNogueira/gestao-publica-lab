@@ -62,8 +62,9 @@ class CreateTenantServiceTest extends TestCase
             PermissionSlug::ROLES_CREATE->value,
             PermissionSlug::ROLES_UPDATE->value,
             PermissionSlug::ROLES_DELETE->value,
+            PermissionSlug::ROLES_PERMISSIONS_MANAGE->value,
         ])->get();
-        $this->assertEquals(5, $permissions->count());
+        $this->assertEquals(6, $permissions->count());
 
         // Role has permissions
         foreach ($permissions as $permission) {
@@ -79,6 +80,7 @@ class CreateTenantServiceTest extends TestCase
         $this->assertTrue($membership->hasPermission(PermissionSlug::ROLES_CREATE->value));
         $this->assertTrue($membership->hasPermission(PermissionSlug::ROLES_UPDATE->value));
         $this->assertTrue($membership->hasPermission(PermissionSlug::ROLES_DELETE->value));
+        $this->assertTrue($membership->hasPermission(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value));
     }
 
     public function test_rbac_bootstrap_independent_executions_avoid_contamination()
@@ -105,6 +107,7 @@ class CreateTenantServiceTest extends TestCase
             PermissionSlug::ROLES_CREATE->value,
             PermissionSlug::ROLES_UPDATE->value,
             PermissionSlug::ROLES_DELETE->value,
+            PermissionSlug::ROLES_PERMISSIONS_MANAGE->value,
         ])->get();
 
         // 2. Não existe cross-tenant contamination nas permissions das Roles
@@ -119,6 +122,7 @@ class CreateTenantServiceTest extends TestCase
         $this->assertEquals(1, Permission::where('slug', PermissionSlug::ROLES_CREATE->value)->count());
         $this->assertEquals(1, Permission::where('slug', PermissionSlug::ROLES_UPDATE->value)->count());
         $this->assertEquals(1, Permission::where('slug', PermissionSlug::ROLES_DELETE->value)->count());
+        $this->assertEquals(1, Permission::where('slug', PermissionSlug::ROLES_PERMISSIONS_MANAGE->value)->count());
 
         // 4. Cada Membership recebe somente a Role do seu Tenant
         $membership1 = Membership::where('tenant_id', $tenant1->id)->where('user_id', $owner1->id)->first();

@@ -128,4 +128,44 @@ class RolePolicyTest extends TestCase
         $this->assertTrue($this->policy->delete($user, $roleA));
         $this->assertFalse($this->policy->delete($user, $roleB));
     }
+
+    public function test_view_permissions_requires_ownership_and_permission()
+    {
+        $user = User::factory()->create();
+        $tenantA = Tenant::create(['name' => 'A', 'slug' => 'a']);
+        $tenantB = Tenant::create(['name' => 'B', 'slug' => 'b']);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenantA->id]);
+
+        $roleA = Role::create(['tenant_id' => $tenantA->id, 'name' => 'A', 'slug' => 'a']);
+        $roleB = Role::create(['tenant_id' => $tenantB->id, 'name' => 'B', 'slug' => 'b']);
+
+        $this->context->set($tenantA, $membership);
+
+        $this->assertFalse($this->policy->viewPermissions($user, $roleA));
+
+        $this->grantPermission($tenantA, $membership, PermissionSlug::ROLES_PERMISSIONS_MANAGE->value);
+
+        $this->assertTrue($this->policy->viewPermissions($user, $roleA));
+        $this->assertFalse($this->policy->viewPermissions($user, $roleB));
+    }
+
+    public function test_manage_permissions_requires_ownership_and_permission()
+    {
+        $user = User::factory()->create();
+        $tenantA = Tenant::create(['name' => 'A', 'slug' => 'a']);
+        $tenantB = Tenant::create(['name' => 'B', 'slug' => 'b']);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenantA->id]);
+
+        $roleA = Role::create(['tenant_id' => $tenantA->id, 'name' => 'A', 'slug' => 'a']);
+        $roleB = Role::create(['tenant_id' => $tenantB->id, 'name' => 'B', 'slug' => 'b']);
+
+        $this->context->set($tenantA, $membership);
+
+        $this->assertFalse($this->policy->managePermissions($user, $roleA));
+
+        $this->grantPermission($tenantA, $membership, PermissionSlug::ROLES_PERMISSIONS_MANAGE->value);
+
+        $this->assertTrue($this->policy->managePermissions($user, $roleA));
+        $this->assertFalse($this->policy->managePermissions($user, $roleB));
+    }
 }
