@@ -31,5 +31,7 @@ Route::middleware('auth')->group(function () {
 
         Route::delete('memberships/{membership}/roles/{role}', [\App\Modules\Tenancy\Http\Controllers\MembershipRoleController::class, 'destroy'])
             ->name('memberships.roles.destroy')->scopeBindings();
+        Route::resource('roles', \App\Modules\Tenancy\Http\Controllers\RoleController::class)
+            ->only(['index', 'show', 'store', 'update', 'destroy']);
     });
 });
