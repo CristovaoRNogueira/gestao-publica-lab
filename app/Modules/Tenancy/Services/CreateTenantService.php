@@ -38,8 +38,18 @@ class CreateTenantService
                 'is_active' => true,
             ]);
 
-            // 3. Find the global Permission (fails if catalog is not seeded)
-            $permission = Permission::where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value)->firstOrFail();
+            // 3. Find the global Permissions (fails if catalog is not seeded)
+            $permissions = Permission::whereIn('slug', [
+                PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+                PermissionSlug::ROLES_VIEW->value,
+                PermissionSlug::ROLES_CREATE->value,
+                PermissionSlug::ROLES_UPDATE->value,
+                PermissionSlug::ROLES_DELETE->value,
+            ])->get();
+
+            if ($permissions->count() !== 5) {
+                throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Not all required permissions were found in the catalog.');
+            }
 
             // 4. Create the tenant-scoped Admin Role
             $role = Role::create([
@@ -48,8 +58,8 @@ class CreateTenantService
                 'slug' => 'admin',
             ]);
 
-            // 5. Attach the permission to the role
-            $role->permissions()->attach($permission->id);
+            // 5. Attach the permissions to the role
+            $role->permissions()->attach($permissions->pluck('id'));
 
             // 6. Attach the role to the membership
             $membership->roles()->attach($role->id);
