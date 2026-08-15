@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Modules\Tenancy\Enums\PermissionSlug;
 use App\Models\User;
 use App\Modules\Tenancy\Context\TenantContext;
 use App\Modules\Tenancy\Models\Membership;
@@ -16,13 +17,13 @@ class MembershipPolicy
     public function assignRole(User $user, Membership $targetMembership): bool
     {
         return $this->belongsToActiveTenant($targetMembership)
-            && ($this->context->getMembership()?->hasPermission('memberships.roles.manage') ?? false);
+            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false);
     }
 
     public function revokeRole(User $user, Membership $targetMembership): bool
     {
         return $this->belongsToActiveTenant($targetMembership)
-            && ($this->context->getMembership()?->hasPermission('memberships.roles.manage') ?? false);
+            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false);
     }
 
     private function belongsToActiveTenant(Membership $membership): bool

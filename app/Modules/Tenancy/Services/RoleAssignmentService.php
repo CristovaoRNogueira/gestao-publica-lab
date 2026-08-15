@@ -8,6 +8,7 @@ use App\Modules\Tenancy\Exceptions\CannotAssignRoleToInactiveMembershipException
 use App\Modules\Tenancy\Models\Membership;
 use App\Modules\Tenancy\Models\Role;
 use App\Modules\Tenancy\Models\Tenant;
+use App\Modules\Tenancy\Enums\PermissionSlug;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -98,7 +99,7 @@ class RoleAssignmentService
             }
 
             $role->loadMissing('permissions');
-            $providesAdmin = $role->permissions->contains('slug', 'memberships.roles.manage');
+            $providesAdmin = $role->permissions->contains('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
 
             if ($providesAdmin) {
                 $this->checkEffectiveCapacity($targetMembership, $tenantId);
@@ -114,7 +115,7 @@ class RoleAssignmentService
             ->where('is_active', true)
             ->where('id', '!=', $targetMembership->id)
             ->whereHas('roles.permissions', function ($query) {
-                $query->where('slug', 'memberships.roles.manage');
+                $query->where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
             })->count();
 
         if ($activeAdminCount > 0) {
@@ -127,7 +128,7 @@ class RoleAssignmentService
 
         $willStillHaveAdmin = $targetMembership->roles()
             ->whereHas('permissions', function ($query) {
-                $query->where('slug', 'memberships.roles.manage');
+                $query->where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
             })->count();
 
         if ($willStillHaveAdmin <= 1) {
