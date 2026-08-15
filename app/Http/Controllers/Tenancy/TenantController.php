@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Tenancy;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Tenancy\Services\TenantResolver;
+use App\Http\Requests\Tenancy\CreateTenantRequest;
+use App\Modules\Tenancy\Exceptions\TenantSlugAlreadyExistsException;
+use App\Modules\Tenancy\Services\CreateTenantService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class TenantController extends Controller
 {
@@ -36,5 +40,24 @@ class TenantController extends Controller
         $request->session()->put('tenant_id', $resolved->tenant->id);
 
         return redirect()->intended('/dashboard');
+    }
+
+    /**
+     * Create a new Tenant, assigning the authenticated user as the owner.
+     */
+    public function store(CreateTenantRequest $request, CreateTenantService $service): RedirectResponse
+    {
+        try {
+            $tenant = $service->execute($request->user(), $request->validated());
+
+            // Automatically select the newly created tenant
+            $request->session()->put('tenant_id', $tenant->id);
+
+            return redirect()->intended('/dashboard')->with('success', 'Tenant criado com sucesso.');
+        } catch (TenantSlugAlreadyExistsException $e) {
+            throw ValidationException::withMessages([
+                'slug' => 'O slug gerado ou fornecido já está em uso por outro tenant.',
+            ]);
+        }
     }
 }
