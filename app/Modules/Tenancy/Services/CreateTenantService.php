@@ -10,6 +10,9 @@ use App\Modules\Tenancy\Models\Role;
 use App\Modules\Tenancy\Models\Tenant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Database\QueryException;
+use App\Modules\Tenancy\Exceptions\TenantSlugAlreadyExistsException;
 
 class CreateTenantService
 {
@@ -24,12 +27,29 @@ class CreateTenantService
     public function execute(User $owner, array $tenantData): Tenant
     {
         return DB::transaction(function () use ($owner, $tenantData) {
-            // 1. Create the Tenant
-            $tenant = Tenant::create([
-                'name' => $tenantData['name'],
-                'slug' => $tenantData['slug'] ?? Str::slug($tenantData['name']),
-                'is_active' => $tenantData['is_active'] ?? true,
-            ]);
+            $slug = $tenantData['slug'] ?? Str::slug($tenantData['name']);
+
+            if (empty($slug)) {
+                throw ValidationException::withMessages([
+                    'slug' => 'O nome fornecido não resultou em um slug válido.',
+                ]);
+            }
+
+            try {
+                // 1. Create the Tenant
+                $tenant = Tenant::create([
+                    'name' => $tenantData['name'],
+                    'slug' => $slug,
+                    'is_active' => true, // Enforce active on creation
+                ]);
+            } catch (QueryException $e) {
+                // PostgreSQL unique violation is 23505
+                // Check if it's related to the slug constraint
+                if ($e->getCode() === '23505' && str_contains($e->getMessage(), 'tenants_slug_unique')) {
+                    throw new TenantSlugAlreadyExistsException($slug);
+                }
+                throw $e;
+            }
 
             // 2. Create the initial Membership (active)
             $membership = Membership::create([

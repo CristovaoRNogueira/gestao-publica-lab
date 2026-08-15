@@ -17,6 +17,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::post('/tenant/select', [TenantController::class, 'select'])->name('tenant.select');
+    Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
 
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
