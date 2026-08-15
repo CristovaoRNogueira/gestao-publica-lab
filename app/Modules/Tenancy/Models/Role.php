@@ -1,9 +1,11 @@
 <?php
 
 namespace App\Modules\Tenancy\Models;
+use App\Modules\Tenancy\Models\Tenant;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Role extends Model
 {
@@ -17,5 +19,10 @@ class Role extends Model
     public function memberships(): BelongsToMany
     {
         return $this->belongsToMany(Membership::class, 'membership_role');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
     }
 }
