@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Policies;
 
+use App\Modules\Tenancy\Enums\PermissionSlug;
 use App\Models\User;
 use App\Modules\Secretaria\Models\Secretaria;
 use App\Modules\Tenancy\Context\TenantContext;
@@ -47,7 +48,7 @@ class SecretariaPolicyTest extends TestCase
         $user = User::factory()->create();
         $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
-        $this->grantPermission($tenant, $membership, 'secretarias.view');
+        $this->grantPermission($tenant, $membership, PermissionSlug::SECRETARIAS_VIEW->value);
 
         $this->context->set($tenant, $membership);
 
@@ -80,7 +81,7 @@ class SecretariaPolicyTest extends TestCase
         $user = User::factory()->create();
         $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
-        $this->grantPermission($tenant, $membership, 'secretarias.create');
+        $this->grantPermission($tenant, $membership, PermissionSlug::SECRETARIAS_CREATE->value);
 
         $this->context->set($tenant, $membership);
 
@@ -104,7 +105,7 @@ class SecretariaPolicyTest extends TestCase
         $user = User::factory()->create();
         $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
-        $this->grantPermission($tenant, $membership, 'secretarias.update');
+        $this->grantPermission($tenant, $membership, PermissionSlug::SECRETARIAS_UPDATE->value);
 
         $secretaria = Secretaria::factory()->create(['tenant_id' => $tenant->id]);
 
@@ -134,7 +135,7 @@ class SecretariaPolicyTest extends TestCase
         $user = User::factory()->create();
         $membership = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
 
-        $this->grantPermission($tenantA, $membership, 'secretarias.update');
+        $this->grantPermission($tenantA, $membership, PermissionSlug::SECRETARIAS_UPDATE->value);
 
         $secretaria = Secretaria::factory()->create(['tenant_id' => $tenantB->id]);
 

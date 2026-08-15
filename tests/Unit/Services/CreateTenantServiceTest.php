@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Services;
 
+use App\Modules\Tenancy\Enums\PermissionSlug;
 use App\Models\User;
 use App\Modules\Tenancy\Models\Membership;
 use App\Modules\Tenancy\Models\Permission;
@@ -20,6 +21,7 @@ class CreateTenantServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(\Database\Seeders\PermissionCatalogSeeder::class);
         $this->service = new CreateTenantService();
     }
 
@@ -54,7 +56,7 @@ class CreateTenantServiceTest extends TestCase
         $this->assertEquals('Administrador', $role->name);
 
         // Global permission exists
-        $permission = Permission::where('slug', 'memberships.roles.manage')->first();
+        $permission = Permission::where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value)->first();
         $this->assertNotNull($permission);
 
         // Role has permission
@@ -64,7 +66,7 @@ class CreateTenantServiceTest extends TestCase
         $this->assertTrue($membership->roles->contains($role->id));
 
         // Membership effectively has permission
-        $this->assertTrue($membership->hasPermission('memberships.roles.manage'));
+        $this->assertTrue($membership->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value));
     }
 
     public function test_rbac_bootstrap_independent_executions_avoid_contamination()
@@ -85,14 +87,14 @@ class CreateTenantServiceTest extends TestCase
         // 1. Cada Tenant possui sua própria Role admin
         $this->assertNotEquals($role1->id, $role2->id);
 
-        $permission = Permission::where('slug', 'memberships.roles.manage')->first();
+        $permission = Permission::where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value)->first();
 
         // 2. Não existe cross-tenant contamination nas permissions das Roles
         $this->assertTrue($role1->permissions->contains($permission->id));
         $this->assertTrue($role2->permissions->contains($permission->id));
 
         // 3. Somente uma Permission com slug memberships.roles.manage
-        $this->assertEquals(1, Permission::where('slug', 'memberships.roles.manage')->count());
+        $this->assertEquals(1, Permission::where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value)->count());
 
         // 4. Cada Membership recebe somente a Role do seu Tenant
         $membership1 = Membership::where('tenant_id', $tenant1->id)->where('user_id', $owner1->id)->first();

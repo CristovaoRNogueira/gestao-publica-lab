@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Policies;
 
+use App\Modules\Tenancy\Enums\PermissionSlug;
 use App\Models\User;
 use App\Modules\Tenancy\Context\TenantContext;
 use App\Modules\Tenancy\Models\Membership;
@@ -45,7 +46,7 @@ class MembershipPolicyTest extends TestCase
         $user = User::factory()->create();
         $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
-        $this->grantPermission($tenant, $membership, 'memberships.roles.manage');
+        $this->grantPermission($tenant, $membership, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
         $this->context->set($tenant, $membership);
 
         $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
@@ -74,7 +75,7 @@ class MembershipPolicyTest extends TestCase
         $user = User::factory()->create();
         $membership = Membership::create(['tenant_id' => $tenant1->id, 'user_id' => $user->id, 'is_active' => true]);
 
-        $this->grantPermission($tenant1, $membership, 'memberships.roles.manage');
+        $this->grantPermission($tenant1, $membership, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
         $this->context->set($tenant1, $membership);
 
         $targetMembership = Membership::create(['tenant_id' => $tenant2->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);

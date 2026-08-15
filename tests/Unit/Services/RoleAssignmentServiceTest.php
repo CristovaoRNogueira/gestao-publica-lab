@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Services;
 
+use App\Modules\Tenancy\Enums\PermissionSlug;
 use App\Models\User;
 use App\Modules\Tenancy\Context\TenantContext;
 use App\Modules\Tenancy\Exceptions\CannotRemoveLastAdminException;
@@ -132,7 +133,7 @@ class RoleAssignmentServiceTest extends TestCase
         $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
-        $permission = Permission::create(['name' => 'memberships.roles.manage', 'slug' => 'memberships.roles.manage']);
+        $permission = Permission::create(['name' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value, 'slug' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
         $role->permissions()->attach($permission);
 
         $targetMembership->roles()->attach($role);
@@ -151,7 +152,7 @@ class RoleAssignmentServiceTest extends TestCase
         $otherMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
-        $permission = Permission::create(['name' => 'memberships.roles.manage', 'slug' => 'memberships.roles.manage']);
+        $permission = Permission::create(['name' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value, 'slug' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
         $role->permissions()->attach($permission);
 
         $targetMembership->roles()->attach($role);
@@ -171,7 +172,7 @@ class RoleAssignmentServiceTest extends TestCase
         $inactiveAdmin = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => false]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
-        $permission = Permission::create(['name' => 'memberships.roles.manage', 'slug' => 'memberships.roles.manage']);
+        $permission = Permission::create(['name' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value, 'slug' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
         $role->permissions()->attach($permission);
 
         $targetMembership->roles()->attach($role);
@@ -220,7 +221,7 @@ class RoleAssignmentServiceTest extends TestCase
         $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
 
         $otherAdminRole = Role::create(['tenant_id' => $tenant->id, 'name' => 'Other Admin', 'slug' => 'other_admin']);
-        $permission = Permission::create(['name' => 'memberships.roles.manage', 'slug' => 'memberships.roles.manage']);
+        $permission = Permission::create(['name' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value, 'slug' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
         $otherAdminRole->permissions()->attach($permission);
         $targetMembership->roles()->attach($otherAdminRole);
 

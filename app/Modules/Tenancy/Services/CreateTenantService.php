@@ -2,6 +2,7 @@
 
 namespace App\Modules\Tenancy\Services;
 
+use App\Modules\Tenancy\Enums\PermissionSlug;
 use App\Models\User;
 use App\Modules\Tenancy\Models\Membership;
 use App\Modules\Tenancy\Models\Permission;
@@ -37,12 +38,8 @@ class CreateTenantService
                 'is_active' => true,
             ]);
 
-            // 3. Ensure global Permission exists
-            $permission = Permission::firstOrCreate([
-                'slug' => 'memberships.roles.manage',
-            ], [
-                'name' => 'Gerenciar Papéis de Associação',
-            ]);
+            // 3. Find the global Permission (fails if catalog is not seeded)
+            $permission = Permission::where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value)->firstOrFail();
 
             // 4. Create the tenant-scoped Admin Role
             $role = Role::create([

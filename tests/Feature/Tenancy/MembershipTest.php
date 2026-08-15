@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Tenancy;
 
+use App\Modules\Tenancy\Enums\PermissionSlug;
 use App\Models\User;
 use App\Modules\Tenancy\Context\TenantContext;
 use App\Modules\Tenancy\Middleware\ResolveTenant;
@@ -202,7 +203,7 @@ class MembershipTest extends TestCase
         $user = User::factory()->create();
         $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
-        $this->grantPermission($tenant, $membership, 'secretarias.view');
+        $this->grantPermission($tenant, $membership, PermissionSlug::SECRETARIAS_VIEW->value);
 
         // viewAny should work with permission
         $response = $this->actingAs($user)
