@@ -32,4 +32,15 @@ class Membership extends Model
     {
         return $this->belongsToMany(Role::class, 'membership_role');
     }
+
+    public function hasPermission(string $permissionSlug): bool
+    {
+        foreach ($this->roles as $role) {
+            if ($role->permissions->contains('slug', $permissionSlug)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
