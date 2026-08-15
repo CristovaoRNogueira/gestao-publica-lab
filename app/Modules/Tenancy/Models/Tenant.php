@@ -3,8 +3,7 @@
 namespace App\Modules\Tenancy\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tenant extends Model
 {
@@ -17,8 +16,11 @@ class Tenant extends Model
         ];
     }
 
-    public function users(): BelongsToMany
+    /**
+     * Get the memberships for this tenant.
+     */
+    public function memberships(): HasMany
     {
-        return $this->belongsToMany(User::class)->withTimestamps();
+        return $this->hasMany(Membership::class);
     }
 }

@@ -73,14 +73,17 @@ class LoginController extends Controller
     {
         $user = $request->user();
 
-        $activeTenants = $user->tenants()->where('is_active', true)->get();
+        $activeMemberships = $user->memberships()
+            ->where('is_active', true)
+            ->whereHas('tenant', fn ($q) => $q->where('is_active', true))
+            ->get();
 
-        if ($activeTenants->count() === 1) {
-            $tenant = $activeTenants->first();
-            $resolved = $resolver->resolve($tenant->id, $user);
+        if ($activeMemberships->count() === 1) {
+            $membership = $activeMemberships->first();
+            $resolved = $resolver->resolve($membership->tenant_id, $user);
 
             if ($resolved) {
-                $request->session()->put('tenant_id', $resolved->id);
+                $request->session()->put('tenant_id', $resolved->tenant->id);
                 return;
             }
         }

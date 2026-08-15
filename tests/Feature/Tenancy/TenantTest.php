@@ -4,6 +4,7 @@ namespace Tests\Feature\Tenancy;
 
 use App\Models\User;
 use App\Modules\Tenancy\Context\TenantContext;
+use App\Modules\Tenancy\Models\Membership;
 use App\Modules\Tenancy\Models\Tenant;
 use App\Modules\Tenancy\Middleware\ResolveTenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -40,7 +41,7 @@ class TenantTest extends TestCase
         ]);
     }
 
-    public function test_authenticated_user_has_tenant()
+    public function test_authenticated_user_has_membership()
     {
         $tenant = Tenant::create([
             'name' => 'Acme Corp',
@@ -48,9 +49,9 @@ class TenantTest extends TestCase
         ]);
 
         $user = User::factory()->create();
-        $user->tenants()->attach($tenant);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
-        $this->assertTrue($user->tenants->contains($tenant));
+        $this->assertTrue($user->memberships()->where('tenant_id', $tenant->id)->exists());
     }
 
     public function test_request_without_valid_tenant_is_rejected()
@@ -68,7 +69,7 @@ class TenantTest extends TestCase
         $tenant2 = Tenant::create(['name' => 'Tenant 2', 'slug' => 't2']);
 
         $user = User::factory()->create();
-        $user->tenants()->attach($tenant1);
+        Membership::create(['tenant_id' => $tenant1->id, 'user_id' => $user->id, 'is_active' => true]);
 
         // Try to access tenant 2 via session
         $response = $this->actingAs($user)
@@ -88,7 +89,7 @@ class TenantTest extends TestCase
         ]);
 
         $user = User::factory()->create();
-        $user->tenants()->attach($tenant);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $response = $this->actingAs($user)
             ->withSession(['tenant_id' => $tenant->id])
@@ -107,7 +108,7 @@ class TenantTest extends TestCase
         ]);
 
         $user = User::factory()->create();
-        $user->tenants()->attach($tenant);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $response = $this->actingAs($user)
             ->withSession(['tenant_id' => $tenant->id])

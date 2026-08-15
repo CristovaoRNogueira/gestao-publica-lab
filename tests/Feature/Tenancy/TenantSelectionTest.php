@@ -3,6 +3,7 @@
 namespace Tests\Feature\Tenancy;
 
 use App\Models\User;
+use App\Modules\Tenancy\Models\Membership;
 use App\Modules\Tenancy\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -46,7 +47,7 @@ class TenantSelectionTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
-        $user->tenants()->attach($tenant);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $response = $this->actingAs($user)
             ->post('/tenant/select', ['tenant_id' => $tenant->id]);
@@ -58,7 +59,7 @@ class TenantSelectionTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
-        $user->tenants()->attach($tenant);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $this->actingAs($user)
             ->post('/tenant/select', ['tenant_id' => $tenant->id]);
@@ -70,7 +71,7 @@ class TenantSelectionTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
-        $user->tenants()->attach($tenant);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $response = $this->actingAs($user)
             ->post('/tenant/select', ['tenant_id' => $tenant->id]);
@@ -105,7 +106,7 @@ class TenantSelectionTest extends TestCase
             'is_active' => false,
         ]);
         $user = User::factory()->create();
-        $user->tenants()->attach($tenant);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $response = $this->actingAs($user)
             ->post('/tenant/select', ['tenant_id' => $tenant->id]);
@@ -122,7 +123,7 @@ class TenantSelectionTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
-        // User is NOT attached to the tenant
+        // User is NOT a member of the tenant
 
         $response = $this->actingAs($user)
             ->post('/tenant/select', ['tenant_id' => $tenant->id]);
@@ -167,7 +168,8 @@ class TenantSelectionTest extends TestCase
         $tenant2 = Tenant::create(['name' => 'Tenant B', 'slug' => 'tb', 'is_active' => true]);
 
         $user = User::factory()->create();
-        $user->tenants()->attach([$tenant1->id, $tenant2->id]);
+        Membership::create(['tenant_id' => $tenant1->id, 'user_id' => $user->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenant2->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $response = $this->actingAs($user)->get('/dashboard');
 
@@ -187,7 +189,7 @@ class TenantSelectionTest extends TestCase
     {
         $tenant = $this->createActiveTenant('single');
         $user = User::factory()->create(['password' => 'password']);
-        $user->tenants()->attach($tenant);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $this->post('/login', [
             'email' => $user->email,

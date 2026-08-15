@@ -52,7 +52,13 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
                 'tenant' => $this->activeTenant($request),
                 'tenants' => $user
-                    ? $user->tenants()->where('is_active', true)->get(['tenants.id', 'tenants.name', 'tenants.slug'])->toArray()
+                    ? $user->memberships()
+                        ->where('is_active', true)
+                        ->whereHas('tenant', fn ($q) => $q->where('is_active', true))
+                        ->with('tenant:id,name,slug')
+                        ->get()
+                        ->pluck('tenant')
+                        ->toArray()
                     : [],
             ],
         ]);
@@ -75,16 +81,16 @@ class HandleInertiaRequests extends Middleware
             return null;
         }
 
-        $tenant = $this->resolver->resolve($tenantId, $user);
+        $resolved = $this->resolver->resolve($tenantId, $user);
 
-        if (! $tenant) {
+        if (! $resolved) {
             return null;
         }
 
         return [
-            'id' => $tenant->id,
-            'name' => $tenant->name,
-            'slug' => $tenant->slug,
+            'id' => $resolved->tenant->id,
+            'name' => $resolved->tenant->name,
+            'slug' => $resolved->tenant->slug,
         ];
     }
 }

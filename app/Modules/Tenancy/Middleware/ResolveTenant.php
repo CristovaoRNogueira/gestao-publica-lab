@@ -25,14 +25,14 @@ class ResolveTenant
 
         $tenantId = $request->session()->get('tenant_id');
 
-        $tenant = $this->resolver->resolve($tenantId, $user);
+        $resolved = $this->resolver->resolve($tenantId, $user);
 
-        if (!$tenant) {
+        if (!$resolved) {
             $request->session()->forget('tenant_id');
             abort(403, 'Unauthorized or invalid tenant.');
         }
 
-        $this->context->setTenant($tenant);
+        $this->context->set($resolved->tenant, $resolved->membership);
 
         return $next($request);
     }

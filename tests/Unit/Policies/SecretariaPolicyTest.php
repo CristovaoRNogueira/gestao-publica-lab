@@ -5,6 +5,7 @@ namespace Tests\Unit\Policies;
 use App\Models\User;
 use App\Modules\Secretaria\Models\Secretaria;
 use App\Modules\Tenancy\Context\TenantContext;
+use App\Modules\Tenancy\Models\Membership;
 use App\Modules\Tenancy\Models\Tenant;
 use App\Policies\SecretariaPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -29,8 +30,9 @@ class SecretariaPolicyTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't1', 'is_active' => true]);
         $user = User::factory()->create();
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
-        $this->context->setTenant($tenant);
+        $this->context->set($tenant, $membership);
 
         $this->assertTrue($this->policy->viewAny($user));
     }
@@ -39,7 +41,7 @@ class SecretariaPolicyTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->context->setTenant(null);
+        $this->context->set(null, null);
 
         $this->assertFalse($this->policy->viewAny($user));
     }
@@ -48,8 +50,9 @@ class SecretariaPolicyTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't3', 'is_active' => true]);
         $user = User::factory()->create();
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
-        $this->context->setTenant($tenant);
+        $this->context->set($tenant, $membership);
 
         $this->assertTrue($this->policy->create($user));
     }
@@ -58,10 +61,11 @@ class SecretariaPolicyTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't4', 'is_active' => true]);
         $user = User::factory()->create();
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $secretaria = Secretaria::factory()->create(['tenant_id' => $tenant->id]);
 
-        $this->context->setTenant($tenant);
+        $this->context->set($tenant, $membership);
 
         $this->assertTrue($this->policy->update($user, $secretaria));
     }
@@ -72,10 +76,11 @@ class SecretariaPolicyTest extends TestCase
         $tenantB = Tenant::create(['name' => 'TB', 'slug' => 'tb2', 'is_active' => true]);
 
         $user = User::factory()->create();
+        $membership = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $secretaria = Secretaria::factory()->create(['tenant_id' => $tenantB->id]);
 
-        $this->context->setTenant($tenantA);
+        $this->context->set($tenantA, $membership);
 
         $this->assertFalse($this->policy->update($user, $secretaria));
     }
