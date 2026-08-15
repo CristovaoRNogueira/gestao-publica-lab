@@ -27,13 +27,13 @@ class TenantController extends Controller
         ]);
 
         $user = $request->user();
-        $tenant = $this->resolver->resolve($validated['tenant_id'], $user);
+        $resolved = $this->resolver->resolve($validated['tenant_id'], $user);
 
-        if (! $tenant) {
+        if (! $resolved) {
             abort(403, 'Tenant inválido ou sem membership.');
         }
 
-        $request->session()->put('tenant_id', $tenant->id);
+        $request->session()->put('tenant_id', $resolved->tenant->id);
 
         return redirect()->intended('/dashboard');
     }

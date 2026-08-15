@@ -4,6 +4,7 @@ namespace Tests\Feature\Secretaria;
 
 use App\Models\User;
 use App\Modules\Secretaria\Models\Secretaria;
+use App\Modules\Tenancy\Models\Membership;
 use App\Modules\Tenancy\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -45,7 +46,7 @@ class SecretariaTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
-        $user->tenants()->attach($tenant);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
         Secretaria::factory()->create([
             'tenant_id' => $tenant->id,
@@ -70,7 +71,8 @@ class SecretariaTest extends TestCase
         $tenantB = $this->createActiveTenant('tenant-b');
 
         $user = User::factory()->create();
-        $user->tenants()->attach([$tenantA->id, $tenantB->id]);
+        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'is_active' => true]);
 
         Secretaria::factory()->create(['tenant_id' => $tenantA->id, 'name' => 'A1']);
         Secretaria::factory()->create(['tenant_id' => $tenantA->id, 'name' => 'A2']);
@@ -93,7 +95,7 @@ class SecretariaTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
-        $user->tenants()->attach($tenant);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $response = $this->actingAs($user)
             ->withSession(['tenant_id' => $tenant->id])
@@ -117,7 +119,7 @@ class SecretariaTest extends TestCase
         $tenantB = $this->createActiveTenant('tenant-b');
 
         $user = User::factory()->create();
-        $user->tenants()->attach($tenantA);
+        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $this->actingAs($user)
             ->withSession(['tenant_id' => $tenantA->id])
@@ -142,7 +144,7 @@ class SecretariaTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
-        $user->tenants()->attach($tenant);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
         // First one
         $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
@@ -161,7 +163,8 @@ class SecretariaTest extends TestCase
         $tenantA = $this->createActiveTenant('a');
         $tenantB = $this->createActiveTenant('b');
         $user = User::factory()->create();
-        $user->tenants()->attach([$tenantA->id, $tenantB->id]);
+        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $this->actingAs($user)->withSession(['tenant_id' => $tenantA->id])
             ->post('/secretarias', ['name' => 'Saúde']);
@@ -181,7 +184,7 @@ class SecretariaTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
-        $user->tenants()->attach($tenant);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $secretaria = Secretaria::factory()->create([
             'tenant_id' => $tenant->id,
@@ -208,7 +211,8 @@ class SecretariaTest extends TestCase
         $tenantA = $this->createActiveTenant('a');
         $tenantB = $this->createActiveTenant('b');
         $user = User::factory()->create();
-        $user->tenants()->attach([$tenantA->id, $tenantB->id]);
+        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $secretariaB = Secretaria::factory()->create([
             'tenant_id' => $tenantB->id,
@@ -238,7 +242,8 @@ class SecretariaTest extends TestCase
         $tenantB = $this->createActiveTenant('tb');
 
         $user = User::factory()->create();
-        $user->tenants()->attach([$tenantA->id, $tenantB->id]);
+        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'is_active' => true]);
 
         $secretariaA = Secretaria::factory()->create(['tenant_id' => $tenantA->id, 'name' => 'A']);
         $secretariaB = Secretaria::factory()->create(['tenant_id' => $tenantB->id, 'name' => 'B']);

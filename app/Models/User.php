@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use App\Modules\Tenancy\Models\Tenant;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Modules\Tenancy\Models\Membership;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
@@ -20,11 +20,11 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * Get the tenants that belong to the user.
+     * Get the memberships for this user.
      */
-    public function tenants(): BelongsToMany
+    public function memberships(): HasMany
     {
-        return $this->belongsToMany(Tenant::class)->withTimestamps();
+        return $this->hasMany(Membership::class);
     }
 
     /**
