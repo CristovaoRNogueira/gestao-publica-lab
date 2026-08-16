@@ -8,10 +8,16 @@ use App\Modules\Tenancy\Models\Membership;
 use App\Modules\Tenancy\Models\Permission;
 use App\Modules\Tenancy\Models\Role;
 use App\Modules\Tenancy\Models\Tenant;
+use App\Modules\Tenancy\Context\TenantContext;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class RolePermissionService
 {
+    public function __construct(
+        private readonly TenantContext $context
+    ) {
+    }
     /**
      * @var string[]
      */
@@ -27,6 +33,21 @@ class RolePermissionService
 
             if (PermissionSlug::tryFrom($permission->slug) === null) {
                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException();
+            }
+
+            if (in_array($permission->slug, self::CRITICAL_PERMISSIONS, true)) {
+                $membership = $this->context->getMembership();
+                if (!$membership) {
+                    throw ValidationException::withMessages(['permission_id' => ['Não autorizado.']]);
+                }
+
+                foreach (self::CRITICAL_PERMISSIONS as $criticalSlug) {
+                    if (!$membership->hasPermission($criticalSlug)) {
+                        throw ValidationException::withMessages([
+                            'permission_id' => ['Você precisa de todas as permissões administrativas para conceder esta permissão.']
+                        ]);
+                    }
+                }
             }
 
             // Permission attachment is idempotent.

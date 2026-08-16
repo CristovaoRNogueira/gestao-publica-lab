@@ -10,7 +10,9 @@ use App\Modules\Tenancy\Models\Permission;
 use App\Modules\Tenancy\Models\Role;
 use App\Modules\Tenancy\Services\RolePermissionService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 class RolePermissionController extends Controller
 {
@@ -31,7 +33,7 @@ class RolePermissionController extends Controller
         return response()->json($role->permissions);
     }
 
-    public function store(AssignRolePermissionRequest $request, int $roleId): JsonResponse
+    public function store(AssignRolePermissionRequest $request, int $roleId): RedirectResponse
     {
         $role = Role::where('tenant_id', $this->context->getTenant()?->id)->findOrFail($roleId);
 
@@ -41,10 +43,10 @@ class RolePermissionController extends Controller
 
         $this->service->attachPermission($role, $permission);
 
-        return response()->json(['message' => 'Permission attached successfully.']);
+        return back()->with('success', 'Permissão atribuída com sucesso.');
     }
 
-    public function destroy(int $roleId, int $permissionId): JsonResponse
+    public function destroy(int $roleId, int $permissionId): RedirectResponse
     {
         $role = Role::where('tenant_id', $this->context->getTenant()?->id)->findOrFail($roleId);
 
@@ -56,9 +58,9 @@ class RolePermissionController extends Controller
         try {
             $this->service->detachPermission($role, $permission);
         } catch (CannotRemoveLastEffectivePermissionException $e) {
-            abort(409, $e->getMessage());
+            throw ValidationException::withMessages(['permission_id' => $e->getMessage()]);
         }
 
-        return response()->json(['message' => 'Permission detached successfully.']);
+        return back()->with('success', 'Permissão removida com sucesso.');
     }
 }

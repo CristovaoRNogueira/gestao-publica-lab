@@ -11,6 +11,8 @@ use App\Modules\Tenancy\Models\Role;
 use App\Modules\Tenancy\Services\RoleService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class RoleController extends Controller
 {
@@ -22,27 +24,56 @@ class RoleController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(): Response
     {
         $this->authorize('viewAny', Role::class);
 
         $tenantId = $this->context->getTenant()?->id;
 
         $roles = Role::where('tenant_id', $tenantId)
+            ->withCount('memberships')
             ->orderBy('name')
             ->paginate(15);
 
-        return response()->json($roles);
+        return Inertia::render('Role/Index', [
+            'roles' => $roles
+        ]);
     }
 
-    public function show(int $id)
+    public function show(int $id): Response
+    {
+        $tenantId = $this->context->getTenant()?->id;
+        $role = Role::where('tenant_id', $tenantId)
+            ->with(['permissions', 'memberships.user'])
+            ->findOrFail($id);
+
+        $this->authorize('view', $role);
+
+        $allPermissions = \App\Modules\Tenancy\Models\Permission::orderBy('name')->get();
+
+        return Inertia::render('Role/Show', [
+            'role' => $role,
+            'allPermissions' => $allPermissions
+        ]);
+    }
+
+    public function create(): Response
+    {
+        $this->authorize('create', Role::class);
+
+        return Inertia::render('Role/Create');
+    }
+
+    public function edit(int $id): Response
     {
         $tenantId = $this->context->getTenant()?->id;
         $role = Role::where('tenant_id', $tenantId)->findOrFail($id);
 
-        $this->authorize('view', $role);
+        $this->authorize('update', $role);
 
-        return response()->json($role);
+        return Inertia::render('Role/Edit', [
+            'role' => $role
+        ]);
     }
 
     public function store(StoreRoleRequest $request): RedirectResponse
