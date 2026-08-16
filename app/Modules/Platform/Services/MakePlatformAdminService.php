@@ -23,9 +23,11 @@ class MakePlatformAdminService
             PlatformPermissionSlug::PLATFORM_ACCESS->value,
             PlatformPermissionSlug::TENANTS_VIEW->value,
             PlatformPermissionSlug::TENANTS_MANAGE->value,
+            PlatformPermissionSlug::USERS_VIEW->value,
+            PlatformPermissionSlug::USERS_MANAGE->value,
         ])->get();
 
-        if ($platformPermissions->count() < 3) {
+        if ($platformPermissions->count() < 5) {
             throw new \RuntimeException('Platform permission catalog is incomplete. Please run seeders.');
         }
 

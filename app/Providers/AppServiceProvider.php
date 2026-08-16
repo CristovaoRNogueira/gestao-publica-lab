@@ -40,5 +40,17 @@ class AppServiceProvider extends ServiceProvider
             $context->set($user);
             return $context->hasPermission(\App\Modules\Platform\Enums\PlatformPermissionSlug::TENANTS_MANAGE->value);
         });
+
+        \Illuminate\Support\Facades\Gate::define('platform.users.view', function (\App\Models\User $user, ?\App\Models\User $targetUser = null) {
+            $context = app(\App\Modules\Platform\Context\PlatformContext::class);
+            $context->set($user);
+            return $context->hasPermission(\App\Modules\Platform\Enums\PlatformPermissionSlug::USERS_VIEW->value);
+        });
+
+        \Illuminate\Support\Facades\Gate::define('platform.users.manage', function (\App\Models\User $user, ?\App\Modules\Tenancy\Models\Membership $membership = null) {
+            $context = app(\App\Modules\Platform\Context\PlatformContext::class);
+            $context->set($user);
+            return $context->hasPermission(\App\Modules\Platform\Enums\PlatformPermissionSlug::USERS_MANAGE->value);
+        });
     }
 }
