@@ -3,8 +3,10 @@ import { usePage, router } from '@inertiajs/react';
 import { Sidebar } from '../components/Sidebar';
 import { Dropdown } from '../components/ui/Dropdown';
 import { Toast } from '../components/ui/Toast';
+import { ThemeToggle } from '../components/ui/ThemeToggle';
+import { PageProps } from '@inertiajs/core';
 
-interface AuthProps {
+interface AuthProps extends PageProps {
     auth: {
         user: { id: number; name: string; email: string } | null;
         tenant: { id: number; name: string; slug: string } | null;
@@ -47,7 +49,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     if (flash?.info) flashMessages.push({ message: flash.info, type: 'info' as const });
 
     return (
-        <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden font-sans text-gray-900 dark:text-gray-100">
+        <div className="flex-1 flex overflow-hidden">
             {/* Flash Messages */}
             <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
                 {flashMessages.map((msg, idx) => (
@@ -64,7 +66,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             />
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0">
                 {/* Header */}
                 <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center">
@@ -105,6 +107,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                                 ))}
                             </Dropdown>
                         )}
+
+                        {/* Theme Toggle */}
+                        <ThemeToggle />
 
                         {/* User Menu */}
                         {auth?.user && (
