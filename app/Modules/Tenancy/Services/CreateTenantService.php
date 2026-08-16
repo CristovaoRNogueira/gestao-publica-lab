@@ -43,9 +43,10 @@ class CreateTenantService
                     'is_active' => true, // Enforce active on creation
                 ]);
             } catch (QueryException $e) {
-                // PostgreSQL unique violation is 23505
-                // Check if it's related to the slug constraint
-                if ($e->getCode() === '23505' && str_contains($e->getMessage(), 'tenants_slug_unique')) {
+                $isPostgresSlugCollision = $e->getCode() === '23505' && str_contains($e->getMessage(), 'tenants_slug_unique');
+                $isSqliteSlugCollision = $e->getCode() === '23000' && str_contains($e->getMessage(), 'tenants.slug');
+
+                if ($isPostgresSlugCollision || $isSqliteSlugCollision) {
                     throw new TenantSlugAlreadyExistsException($slug);
                 }
                 throw $e;

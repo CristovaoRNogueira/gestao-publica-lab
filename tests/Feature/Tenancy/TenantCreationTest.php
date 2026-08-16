@@ -168,7 +168,7 @@ class TenantCreationTest extends TestCase
 
         $service = app(\App\Modules\Tenancy\Services\CreateTenantService::class);
         $service->execute($user, [
-            'name' => str_repeat('A', 500), // Exceeds DB column size, will throw QueryException (value too long)
+            'name' => null, // Violates NOT NULL constraint, triggering QueryException in both Postgres and SQLite
             'slug' => 'valid-slug',
         ]);
     }
