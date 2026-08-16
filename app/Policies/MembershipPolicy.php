@@ -14,6 +14,17 @@ class MembershipPolicy
     ) {
     }
 
+    public function viewAny(User $user): bool
+    {
+        return $this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false;
+    }
+
+    public function manageRoles(User $user, Membership $targetMembership): bool
+    {
+        return $this->belongsToActiveTenant($targetMembership)
+            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false);
+    }
+
     public function assignRole(User $user, Membership $targetMembership): bool
     {
         return $this->belongsToActiveTenant($targetMembership)
