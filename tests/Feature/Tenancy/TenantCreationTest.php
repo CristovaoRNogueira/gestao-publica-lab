@@ -67,15 +67,24 @@ class TenantCreationTest extends TestCase
         $this->assertEquals($tenant->id, $role->tenant_id);
 
         // Validate Capabilities
-        $this->assertEquals(6, $role->permissions()->count());
+        $this->assertEquals(9, $role->permissions()->count());
 
         $capabilities = $role->permissions()->pluck('slug')->toArray();
-        $this->assertContains(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value, $capabilities);
-        $this->assertContains(PermissionSlug::ROLES_VIEW->value, $capabilities);
-        $this->assertContains(PermissionSlug::ROLES_CREATE->value, $capabilities);
-        $this->assertContains(PermissionSlug::ROLES_UPDATE->value, $capabilities);
-        $this->assertContains(PermissionSlug::ROLES_DELETE->value, $capabilities);
-        $this->assertContains(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value, $capabilities);
+        $expectedCapabilities = [
+            PermissionSlug::MEMBERSHIPS_MANAGE->value,
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::INVITATIONS_VIEW->value,
+            PermissionSlug::INVITATIONS_MANAGE->value,
+            PermissionSlug::ROLES_VIEW->value,
+            PermissionSlug::ROLES_CREATE->value,
+            PermissionSlug::ROLES_UPDATE->value,
+            PermissionSlug::ROLES_DELETE->value,
+            PermissionSlug::ROLES_PERMISSIONS_MANAGE->value,
+        ];
+
+        sort($capabilities);
+        sort($expectedCapabilities);
+        $this->assertEquals($expectedCapabilities, $capabilities);
     }
 
     public function test_name_is_required()

@@ -7,14 +7,46 @@ use App\Modules\Tenancy\Models\TenantInvitation;
 use App\Modules\Tenancy\Services\CreateInvitationService;
 use App\Modules\Tenancy\Services\ResendInvitationService;
 use App\Modules\Tenancy\Services\RevokeInvitationService;
+use App\Modules\Tenancy\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class InvitationController extends Controller
 {
     use AuthorizesRequests;
+
+    public function index(): Response
+    {
+        $this->authorize('viewAny', TenantInvitation::class);
+
+        $tenantId = app(\App\Modules\Tenancy\Context\TenantContext::class)->getTenant()->id;
+
+        $invitations = TenantInvitation::where('tenant_id', $tenantId)
+            ->with(['role:id,name', 'inviter:id,name,email'])
+            ->orderByDesc('created_at')
+            ->paginate(15);
+
+        return Inertia::render('Invitation/Index', [
+            'invitations' => $invitations
+        ]);
+    }
+
+    public function create(): Response
+    {
+        $this->authorize('manage', TenantInvitation::class);
+
+        $tenantId = app(\App\Modules\Tenancy\Context\TenantContext::class)->getTenant()->id;
+        $roles = Role::where('tenant_id', $tenantId)->orderBy('name')->get();
+
+        return Inertia::render('Invitation/Create', [
+            'roles' => $roles
+        ]);
+    }
+
     public function store(Request $request, CreateInvitationService $service)
     {
         $this->authorize('manage', TenantInvitation::class);
@@ -35,7 +67,7 @@ class InvitationController extends Controller
             $request->user()
         );
 
-        return back()->with('success', 'Convite enviado com sucesso.');
+        return redirect('/invitations')->with('success', 'Convite enviado com sucesso.');
     }
 
     public function resend(TenantInvitation $invitation, ResendInvitationService $service)
