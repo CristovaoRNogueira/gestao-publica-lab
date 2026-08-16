@@ -25,7 +25,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware(['auth', \App\Modules\Tenancy\Middleware\ResolveTenant::class])->group(function () {
         Route::resource('secretarias', \App\Modules\Secretaria\Http\Controllers\SecretariaController::class)
-            ->only(['index', 'store', 'update']);
+            ->only(['index', 'create', 'store', 'edit', 'update']);
 
         Route::post('memberships/{membership}/roles', [\App\Modules\Tenancy\Http\Controllers\MembershipRoleController::class, 'store'])
             ->name('memberships.roles.store');
