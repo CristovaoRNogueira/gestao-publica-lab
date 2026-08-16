@@ -26,6 +26,16 @@ class PlatformPermissionCatalogSeeder extends Seeder
                 'slug' => PlatformPermissionSlug::TENANTS_MANAGE->value,
                 'description' => 'Permite ativar e desativar Tenants.',
             ],
+            [
+                'name' => 'Visualizar Usuários',
+                'slug' => PlatformPermissionSlug::USERS_VIEW->value,
+                'description' => 'Permite ler a lista global de usuários e ver detalhes.',
+            ],
+            [
+                'name' => 'Gerenciar Vínculos de Usuários',
+                'slug' => PlatformPermissionSlug::USERS_MANAGE->value,
+                'description' => 'Permite administrar os vínculos de usuários com Tenants, incluindo ativação e desativação de Memberships.',
+            ],
         ];
 
         foreach ($permissions as $permissionData) {

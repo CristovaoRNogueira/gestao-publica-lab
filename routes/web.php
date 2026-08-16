@@ -26,6 +26,10 @@ Route::middleware('auth')->group(function () {
         Route::get('tenants', [\App\Modules\Platform\Http\Controllers\PlatformTenantController::class, 'index'])->name('tenants.index');
         Route::get('tenants/{tenant}', [\App\Modules\Platform\Http\Controllers\PlatformTenantController::class, 'show'])->name('tenants.show');
         Route::patch('tenants/{tenant}/status', [\App\Modules\Platform\Http\Controllers\PlatformTenantController::class, 'updateStatus'])->name('tenants.status.update');
+
+        Route::get('users', [\App\Modules\Platform\Http\Controllers\PlatformUserController::class, 'index'])->name('users.index');
+        Route::get('users/{user}', [\App\Modules\Platform\Http\Controllers\PlatformUserController::class, 'show'])->name('users.show');
+        Route::patch('memberships/{membership}/status', [\App\Modules\Platform\Http\Controllers\PlatformUserController::class, 'updateMembershipStatus'])->name('memberships.status.update');
     });
 
     Route::middleware(['auth', \App\Modules\Tenancy\Middleware\ResolveTenant::class])->group(function () {

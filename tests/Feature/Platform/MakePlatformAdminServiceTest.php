@@ -38,6 +38,8 @@ class MakePlatformAdminServiceTest extends TestCase
         PlatformPermission::create(['name' => 'Acesso', 'slug' => PlatformPermissionSlug::PLATFORM_ACCESS->value]);
         PlatformPermission::create(['name' => 'View', 'slug' => PlatformPermissionSlug::TENANTS_VIEW->value]);
         PlatformPermission::create(['name' => 'Manage', 'slug' => PlatformPermissionSlug::TENANTS_MANAGE->value]);
+        PlatformPermission::create(['name' => 'Users View', 'slug' => PlatformPermissionSlug::USERS_VIEW->value]);
+        PlatformPermission::create(['name' => 'Users Manage', 'slug' => PlatformPermissionSlug::USERS_MANAGE->value]);
 
         $service = new MakePlatformAdminService();
 
@@ -52,6 +54,6 @@ class MakePlatformAdminServiceTest extends TestCase
         $service->execute('admin@example.com');
 
         $this->assertEquals(1, $user->platformRoles()->count());
-        $this->assertEquals(3, $role->permissions()->count());
+        $this->assertEquals(5, $role->permissions()->count());
     }
 }
