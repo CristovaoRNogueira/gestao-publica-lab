@@ -56,15 +56,19 @@ class CreateTenantServiceTest extends TestCase
         $this->assertEquals('Administrador', $role->name);
 
         // Global permissions exist
-        $permissions = Permission::whereIn('slug', [
+        $expectedSlugs = [
+            PermissionSlug::MEMBERSHIPS_MANAGE->value,
             PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::INVITATIONS_VIEW->value,
+            PermissionSlug::INVITATIONS_MANAGE->value,
             PermissionSlug::ROLES_VIEW->value,
             PermissionSlug::ROLES_CREATE->value,
             PermissionSlug::ROLES_UPDATE->value,
             PermissionSlug::ROLES_DELETE->value,
             PermissionSlug::ROLES_PERMISSIONS_MANAGE->value,
-        ])->get();
-        $this->assertEquals(6, $permissions->count());
+        ];
+        $permissions = Permission::whereIn('slug', $expectedSlugs)->get();
+        $this->assertEquals(9, $permissions->count());
 
         // Role has permissions
         foreach ($permissions as $permission) {
@@ -74,13 +78,11 @@ class CreateTenantServiceTest extends TestCase
         // Membership has role
         $this->assertTrue($membership->roles->contains($role->id));
 
-        // Membership effectively has permissions
-        $this->assertTrue($membership->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value));
-        $this->assertTrue($membership->hasPermission(PermissionSlug::ROLES_VIEW->value));
-        $this->assertTrue($membership->hasPermission(PermissionSlug::ROLES_CREATE->value));
-        $this->assertTrue($membership->hasPermission(PermissionSlug::ROLES_UPDATE->value));
-        $this->assertTrue($membership->hasPermission(PermissionSlug::ROLES_DELETE->value));
-        $this->assertTrue($membership->hasPermission(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value));
+        // Membership effectively has exactly the expected permissions
+        $actualSlugs = $membership->roles->flatMap->permissions->pluck('slug')->toArray();
+        sort($expectedSlugs);
+        sort($actualSlugs);
+        $this->assertEquals($expectedSlugs, $actualSlugs);
     }
 
     public function test_rbac_bootstrap_independent_executions_avoid_contamination()
@@ -101,14 +103,18 @@ class CreateTenantServiceTest extends TestCase
         // 1. Cada Tenant possui sua própria Role admin
         $this->assertNotEquals($role1->id, $role2->id);
 
-        $permissions = Permission::whereIn('slug', [
+        $expectedSlugs = [
+            PermissionSlug::MEMBERSHIPS_MANAGE->value,
             PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::INVITATIONS_VIEW->value,
+            PermissionSlug::INVITATIONS_MANAGE->value,
             PermissionSlug::ROLES_VIEW->value,
             PermissionSlug::ROLES_CREATE->value,
             PermissionSlug::ROLES_UPDATE->value,
             PermissionSlug::ROLES_DELETE->value,
             PermissionSlug::ROLES_PERMISSIONS_MANAGE->value,
-        ])->get();
+        ];
+        $permissions = Permission::whereIn('slug', $expectedSlugs)->get();
 
         // 2. Não existe cross-tenant contamination nas permissions das Roles
         foreach ($permissions as $permission) {
@@ -117,12 +123,9 @@ class CreateTenantServiceTest extends TestCase
         }
 
         // 3. Somente as Permissions esperadas existem
-        $this->assertEquals(1, Permission::where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value)->count());
-        $this->assertEquals(1, Permission::where('slug', PermissionSlug::ROLES_VIEW->value)->count());
-        $this->assertEquals(1, Permission::where('slug', PermissionSlug::ROLES_CREATE->value)->count());
-        $this->assertEquals(1, Permission::where('slug', PermissionSlug::ROLES_UPDATE->value)->count());
-        $this->assertEquals(1, Permission::where('slug', PermissionSlug::ROLES_DELETE->value)->count());
-        $this->assertEquals(1, Permission::where('slug', PermissionSlug::ROLES_PERMISSIONS_MANAGE->value)->count());
+        foreach ($expectedSlugs as $slug) {
+            $this->assertEquals(1, Permission::where('slug', $slug)->count());
+        }
 
         // 4. Cada Membership recebe somente a Role do seu Tenant
         $membership1 = Membership::where('tenant_id', $tenant1->id)->where('user_id', $owner1->id)->first();

@@ -40,6 +40,8 @@ Route::middleware('auth')->group(function () {
 
     // Tenant-scoped routes
     Route::middleware(['auth', \App\Modules\Tenancy\Middleware\ResolveTenant::class])->group(function () {        // Invitations
+        Route::get('invitations', [\App\Modules\Tenancy\Http\Controllers\InvitationController::class, 'index'])->name('invitations.index');
+        Route::get('invitations/create', [\App\Modules\Tenancy\Http\Controllers\InvitationController::class, 'create'])->name('invitations.create');
         Route::post('invitations', [\App\Modules\Tenancy\Http\Controllers\InvitationController::class, 'store'])->name('invitations.store');
         Route::post('invitations/{invitation}/resend', [\App\Modules\Tenancy\Http\Controllers\InvitationController::class, 'resend'])->name('invitations.resend');
         Route::patch('invitations/{invitation}/revoke', [\App\Modules\Tenancy\Http\Controllers\InvitationController::class, 'revoke'])->name('invitations.revoke');

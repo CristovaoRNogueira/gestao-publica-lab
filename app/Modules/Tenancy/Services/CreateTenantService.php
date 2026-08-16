@@ -59,18 +59,28 @@ class CreateTenantService
                 'is_active' => true,
             ]);
 
-            // 3. Find the global Permissions (fails if catalog is not seeded)
-            $permissions = Permission::whereIn('slug', [
+            $expectedSlugs = [
+                PermissionSlug::MEMBERSHIPS_MANAGE->value,
                 PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+                PermissionSlug::INVITATIONS_VIEW->value,
+                PermissionSlug::INVITATIONS_MANAGE->value,
                 PermissionSlug::ROLES_VIEW->value,
                 PermissionSlug::ROLES_CREATE->value,
                 PermissionSlug::ROLES_UPDATE->value,
                 PermissionSlug::ROLES_DELETE->value,
                 PermissionSlug::ROLES_PERMISSIONS_MANAGE->value,
-            ])->get();
+            ];
 
-            if ($permissions->count() !== 6) {
-                throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Not all required permissions were found in the catalog.');
+            // 3. Find the global Permissions (fails if catalog is not seeded)
+            $permissions = Permission::whereIn('slug', $expectedSlugs)->get();
+
+            $foundSlugs = $permissions->pluck('slug')->toArray();
+            $missingSlugs = array_diff($expectedSlugs, $foundSlugs);
+
+            if (!empty($missingSlugs)) {
+                throw new \Illuminate\Database\Eloquent\ModelNotFoundException(
+                    'Not all required permissions were found in the catalog. Missing: ' . implode(', ', $missingSlugs)
+                );
             }
 
             // 4. Create the tenant-scoped Admin Role

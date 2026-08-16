@@ -55,7 +55,8 @@ class TenantInvitationTest extends TestCase
             'role_id' => $role->id,
         ]);
 
-        $response->assertRedirect();
+        $response->assertRedirect('/invitations');
+        $response->assertSessionHas('success', 'Convite enviado com sucesso.');
 
         $this->assertDatabaseHas('tenant_invitations', [
             'tenant_id' => $tenant->id,
