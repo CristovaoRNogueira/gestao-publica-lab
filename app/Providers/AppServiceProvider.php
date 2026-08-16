@@ -15,6 +15,10 @@ class AppServiceProvider extends ServiceProvider
             return new \App\Modules\Tenancy\Context\TenantContext();
         });
 
+        $this->app->scoped(\App\Modules\Platform\Context\PlatformContext::class, function () {
+            return new \App\Modules\Platform\Context\PlatformContext();
+        });
+
         $this->app->singleton(\App\Modules\Tenancy\Services\TenantResolver::class, function () {
             return new \App\Modules\Tenancy\Services\TenantResolver();
         });
