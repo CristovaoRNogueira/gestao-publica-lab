@@ -28,6 +28,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the platform roles for this user.
+     */
+    public function platformRoles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(\App\Modules\Platform\Models\PlatformRole::class, 'platform_role_user');
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
