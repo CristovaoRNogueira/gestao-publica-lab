@@ -35,10 +35,9 @@ class MakePlatformAdminServiceTest extends TestCase
     public function test_success_and_idempotence()
     {
         $user = User::factory()->create(['email' => 'admin@example.com']);
-        PlatformPermission::create([
-            'name' => 'Acesso',
-            'slug' => PlatformPermissionSlug::PLATFORM_ACCESS->value,
-        ]);
+        PlatformPermission::create(['name' => 'Acesso', 'slug' => PlatformPermissionSlug::PLATFORM_ACCESS->value]);
+        PlatformPermission::create(['name' => 'View', 'slug' => PlatformPermissionSlug::TENANTS_VIEW->value]);
+        PlatformPermission::create(['name' => 'Manage', 'slug' => PlatformPermissionSlug::TENANTS_MANAGE->value]);
 
         $service = new MakePlatformAdminService();
 
@@ -53,6 +52,6 @@ class MakePlatformAdminServiceTest extends TestCase
         $service->execute('admin@example.com');
 
         $this->assertEquals(1, $user->platformRoles()->count());
-        $this->assertEquals(1, $role->permissions()->count());
+        $this->assertEquals(3, $role->permissions()->count());
     }
 }

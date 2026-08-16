@@ -29,6 +29,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Illuminate\Support\Facades\Gate::define('platform.tenants.view', function (\App\Models\User $user, ?\App\Modules\Tenancy\Models\Tenant $tenant = null) {
+            $context = app(\App\Modules\Platform\Context\PlatformContext::class);
+            $context->set($user);
+            return $context->hasPermission(\App\Modules\Platform\Enums\PlatformPermissionSlug::TENANTS_VIEW->value);
+        });
+
+        \Illuminate\Support\Facades\Gate::define('platform.tenants.manage', function (\App\Models\User $user, ?\App\Modules\Tenancy\Models\Tenant $tenant = null) {
+            $context = app(\App\Modules\Platform\Context\PlatformContext::class);
+            $context->set($user);
+            return $context->hasPermission(\App\Modules\Platform\Enums\PlatformPermissionSlug::TENANTS_MANAGE->value);
+        });
     }
 }

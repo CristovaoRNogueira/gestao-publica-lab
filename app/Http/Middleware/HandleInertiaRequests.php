@@ -64,6 +64,17 @@ class HandleInertiaRequests extends Middleware
             }
         }
 
+        $platformCapabilities = [];
+        if ($user) {
+            $user->loadMissing('platformRoles.permissions');
+            $platformCapabilities = $user->platformRoles
+                ->flatMap->permissions
+                ->pluck('slug')
+                ->unique()
+                ->values()
+                ->toArray();
+        }
+
         return array_merge(parent::share($request), [
             'auth' => [
                 'user' => $user ? [
@@ -82,6 +93,9 @@ class HandleInertiaRequests extends Middleware
                         ->toArray()
                     : [],
                 'capabilities' => $capabilities,
+                'platform' => [
+                    'capabilities' => $platformCapabilities,
+                ],
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),
