@@ -19,10 +19,14 @@ class MakePlatformAdminService
         }
 
         // Verify the catalog has the platform access permission
-        $platformAccessPermission = PlatformPermission::where('slug', PlatformPermissionSlug::PLATFORM_ACCESS->value)->first();
+        $platformPermissions = PlatformPermission::whereIn('slug', [
+            PlatformPermissionSlug::PLATFORM_ACCESS->value,
+            PlatformPermissionSlug::TENANTS_VIEW->value,
+            PlatformPermissionSlug::TENANTS_MANAGE->value,
+        ])->get();
 
-        if (!$platformAccessPermission) {
-            throw new \RuntimeException('Platform permissions catalog not seeded. Please run the seeder first.');
+        if ($platformPermissions->count() < 3) {
+            throw new \RuntimeException('Platform permission catalog is incomplete. Please run seeders.');
         }
 
         // Create or get Super Admin role
@@ -30,12 +34,12 @@ class MakePlatformAdminService
             ['slug' => 'super-admin'],
             [
                 'name' => 'Super Administrador',
-                'description' => 'Administrador global da plataforma',
+                'description' => 'Acesso total de administração da plataforma.',
             ]
         );
 
         // Idempotent attachment of permission to role
-        $role->permissions()->syncWithoutDetaching([$platformAccessPermission->id]);
+        $role->permissions()->syncWithoutDetaching($platformPermissions->pluck('id')->toArray());
 
         // Idempotent attachment of role to user
         $user->platformRoles()->syncWithoutDetaching([$role->id]);

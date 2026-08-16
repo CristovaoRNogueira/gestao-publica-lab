@@ -22,6 +22,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/onboarding', [TenantController::class, 'create'])->name('tenants.create');
 
+    Route::middleware(['auth'])->prefix('platform')->name('platform.')->group(function () {
+        Route::get('tenants', [\App\Modules\Platform\Http\Controllers\PlatformTenantController::class, 'index'])->name('tenants.index');
+        Route::get('tenants/{tenant}', [\App\Modules\Platform\Http\Controllers\PlatformTenantController::class, 'show'])->name('tenants.show');
+        Route::patch('tenants/{tenant}/status', [\App\Modules\Platform\Http\Controllers\PlatformTenantController::class, 'updateStatus'])->name('tenants.status.update');
+    });
+
     Route::middleware(['auth', \App\Modules\Tenancy\Middleware\ResolveTenant::class])->group(function () {
         Route::resource('secretarias', \App\Modules\Secretaria\Http\Controllers\SecretariaController::class)
             ->only(['index', 'create', 'store', 'edit', 'update']);

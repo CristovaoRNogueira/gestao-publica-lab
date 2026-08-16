@@ -14,7 +14,17 @@ class PlatformPermissionCatalogSeeder extends Seeder
             [
                 'name' => 'Acesso à Plataforma',
                 'slug' => PlatformPermissionSlug::PLATFORM_ACCESS->value,
-                'description' => 'Permite acesso ao painel de administração da plataforma.',
+                'description' => 'Permite o acesso básico à área administrativa da plataforma.',
+            ],
+            [
+                'name' => 'Visualizar Tenants',
+                'slug' => PlatformPermissionSlug::TENANTS_VIEW->value,
+                'description' => 'Permite listar e visualizar detalhes dos Tenants da plataforma.',
+            ],
+            [
+                'name' => 'Gerenciar Status de Tenants',
+                'slug' => PlatformPermissionSlug::TENANTS_MANAGE->value,
+                'description' => 'Permite ativar e desativar Tenants.',
             ],
         ];
 
