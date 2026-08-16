@@ -52,7 +52,7 @@ export default function Show({ role, allPermissions }: PageProps) {
 
         try {
             if (isAssigned) {
-                router.delete(route('roles.permissions.destroy', [role.id, permission.id]), {
+                router.delete(`/roles/${role.id}/permissions/${permission.id}`, {
                     preserveScroll: true,
                     onSuccess: () => {
                         setLoading(null);
@@ -64,7 +64,7 @@ export default function Show({ role, allPermissions }: PageProps) {
                     }
                 });
             } else {
-                router.post(route('roles.permissions.store', role.id), { permission_id: permission.id }, {
+                router.post(`/roles/${role.id}/permissions`, { permission_id: permission.id }, {
                     preserveScroll: true,
                     onSuccess: () => {
                         setLoading(null);
@@ -83,7 +83,8 @@ export default function Show({ role, allPermissions }: PageProps) {
     };
 
     return (
-        <AppLayout title={`Papel: ${role.name}`}>
+        <>
+            <Head title={`Papel: ${role.name}`} />
             <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <div className="px-4 sm:px-0 mb-6 flex justify-between items-center">
                     <div>
@@ -91,7 +92,7 @@ export default function Show({ role, allPermissions }: PageProps) {
                         <p className="mt-1 text-sm text-gray-600">{role.description}</p>
                     </div>
                     <Link
-                        href={route('roles.index')}
+                        href="/roles"
                         className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
                     >
                         &larr; Voltar
@@ -182,6 +183,8 @@ export default function Show({ role, allPermissions }: PageProps) {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+Show.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

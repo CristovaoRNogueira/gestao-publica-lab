@@ -11,11 +11,12 @@ export default function Create() {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        post(route('roles.store'));
+        post('/roles');
     };
 
     return (
-        <AppLayout title="Criar Papel">
+        <>
+            <Head title="Criar Papel" />
             <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <div className="md:grid md:grid-cols-3 md:gap-6">
                     <div className="md:col-span-1">
@@ -66,7 +67,7 @@ export default function Create() {
                                 </div>
                                 <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
                                     <Link
-                                        href={route('roles.index')}
+                                        href="/roles"
                                         className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none mr-4"
                                     >
                                         Cancelar
@@ -84,6 +85,8 @@ export default function Create() {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+Create.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

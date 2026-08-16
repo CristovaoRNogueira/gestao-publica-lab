@@ -28,20 +28,21 @@ export default function Index({ roles, flash }: PageProps) {
     const handleDelete = (e: FormEvent, id: number) => {
         e.preventDefault();
         if (confirm('Tem certeza que deseja excluir este papel?')) {
-            destroy(route('roles.destroy', id));
+            destroy(`/roles/${id}`);
         }
     };
 
     return (
-        <AppLayout title="Papéis do Tenant">
+        <>
+            <Head title="Papéis do Tenant" />
             <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <div className="px-4 py-6 sm:px-0">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-2xl font-semibold text-gray-900">Gerenciar Papéis</h1>
 
-                        {auth.permissions.includes('roles.create') && (
+                        {auth.capabilities.includes('roles.create') && (
                             <Link
-                                href={route('roles.create')}
+                                href="/roles/create"
                                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                                 Novo Papel
@@ -98,21 +99,23 @@ export default function Index({ roles, flash }: PageProps) {
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        {auth.permissions.includes('roles.view') && (
-                                                            <Link href={route('roles.show', role.id)} className="text-indigo-600 hover:text-indigo-900 mr-4">
-                                                                Detalhes
-                                                            </Link>
-                                                        )}
-                                                        {auth.permissions.includes('roles.update') && (
-                                                            <Link href={route('roles.edit', role.id)} className="text-indigo-600 hover:text-indigo-900 mr-4">
-                                                                Editar
-                                                            </Link>
-                                                        )}
-                                                        {auth.permissions.includes('roles.delete') && role.memberships_count === 0 && (
-                                                            <button onClick={(e) => handleDelete(e, role.id)} className="text-red-600 hover:text-red-900">
-                                                                Excluir
-                                                            </button>
-                                                        )}
+                                                        <div className="flex justify-end space-x-3 text-right text-sm font-medium">
+                                                            {auth.capabilities.includes('roles.view') && (
+                                                                <Link href={`/roles/${role.id}`} className="text-indigo-600 hover:text-indigo-900 mr-4">
+                                                                    Detalhes
+                                                                </Link>
+                                                            )}
+                                                            {auth.capabilities.includes('roles.update') && (
+                                                                <Link href={`/roles/${role.id}/edit`} className="text-indigo-600 hover:text-indigo-900 mr-4">
+                                                                    Editar
+                                                                </Link>
+                                                            )}
+                                                            {auth.capabilities.includes('roles.delete') && role.memberships_count === 0 && (
+                                                                <button onClick={(e) => handleDelete(e, role.id)} className="text-red-600 hover:text-red-900">
+                                                                    Excluir
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -124,6 +127,8 @@ export default function Index({ roles, flash }: PageProps) {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+Index.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

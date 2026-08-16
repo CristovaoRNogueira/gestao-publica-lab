@@ -246,4 +246,48 @@ class RoleManagementTest extends TestCase
         // Might be slightly larger by 1 or 2 if some cache misses happen, but should absolutely not scale with N
         $this->assertLessThanOrEqual($queryCountBase + 2, $queryCountLoaded);
     }
+
+    public function test_endpoints_return_correct_inertia_responses()
+    {
+        [$user, $tenant, $role] = $this->createMemberWithPermissions([
+            PermissionSlug::ROLES_VIEW->value,
+            PermissionSlug::ROLES_CREATE->value,
+            PermissionSlug::ROLES_UPDATE->value,
+        ]);
+
+        $this->get('/roles')
+            ->assertOk()
+            ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->component('Role/Index'));
+
+        $this->get('/roles/create')
+            ->assertOk()
+            ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->component('Role/Create'));
+
+        $this->get("/roles/{$role->id}")
+            ->assertOk()
+            ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->component('Role/Show'));
+
+        $this->get("/roles/{$role->id}/edit")
+            ->assertOk()
+            ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->component('Role/Edit'));
+    }
+
+    public function test_guest_cannot_access_endpoints()
+    {
+        $this->get('/roles')->assertRedirect('/login');
+        $this->get('/roles/create')->assertRedirect('/login');
+        $this->get('/roles/1')->assertRedirect('/login');
+        $this->get('/roles/1/edit')->assertRedirect('/login');
+    }
+
+    public function test_user_without_permission_receives_403()
+    {
+        // No permissions
+        [$user, $tenant, $role] = $this->createMemberWithPermissions([]);
+
+        $this->get('/roles')->assertForbidden();
+        $this->get('/roles/create')->assertForbidden();
+        $this->get("/roles/{$role->id}")->assertForbidden();
+        $this->get("/roles/{$role->id}/edit")->assertForbidden();
+    }
 }

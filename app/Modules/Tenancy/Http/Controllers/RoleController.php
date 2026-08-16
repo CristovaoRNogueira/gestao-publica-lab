@@ -40,12 +40,11 @@ class RoleController extends Controller
         ]);
     }
 
-    public function show(int $id): Response
+    public function show(Role $role): Response
     {
-        $tenantId = $this->context->getTenant()?->id;
-        $role = Role::where('tenant_id', $tenantId)
-            ->with(['permissions', 'memberships.user'])
-            ->findOrFail($id);
+        abort_if($role->tenant_id !== $this->context->getTenant()?->id, 404);
+
+        $role->load(['permissions', 'memberships.user']);
 
         $this->authorize('view', $role);
 
@@ -64,10 +63,9 @@ class RoleController extends Controller
         return Inertia::render('Role/Create');
     }
 
-    public function edit(int $id): Response
+    public function edit(Role $role): Response
     {
-        $tenantId = $this->context->getTenant()?->id;
-        $role = Role::where('tenant_id', $tenantId)->findOrFail($id);
+        abort_if($role->tenant_id !== $this->context->getTenant()?->id, 404);
 
         $this->authorize('update', $role);
 
@@ -86,10 +84,9 @@ class RoleController extends Controller
             ->with('success', 'Papel criado com sucesso.');
     }
 
-    public function update(UpdateRoleRequest $request, int $id): RedirectResponse
+    public function update(UpdateRoleRequest $request, Role $role): RedirectResponse
     {
-        $tenantId = $this->context->getTenant()?->id;
-        $role = Role::where('tenant_id', $tenantId)->findOrFail($id);
+        abort_if($role->tenant_id !== $this->context->getTenant()?->id, 404);
 
         $this->authorize('update', $role);
 
@@ -99,10 +96,9 @@ class RoleController extends Controller
             ->with('success', 'Papel atualizado com sucesso.');
     }
 
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Role $role): RedirectResponse
     {
-        $tenantId = $this->context->getTenant()?->id;
-        $role = Role::where('tenant_id', $tenantId)->findOrFail($id);
+        abort_if($role->tenant_id !== $this->context->getTenant()?->id, 404);
 
         $this->authorize('delete', $role);
 

@@ -43,11 +43,6 @@ Route::middleware('auth')->group(function () {
         Route::post('invitations', [\App\Modules\Tenancy\Http\Controllers\InvitationController::class, 'store'])->name('invitations.store');
         Route::post('invitations/{invitation}/resend', [\App\Modules\Tenancy\Http\Controllers\InvitationController::class, 'resend'])->name('invitations.resend');
         Route::patch('invitations/{invitation}/revoke', [\App\Modules\Tenancy\Http\Controllers\InvitationController::class, 'revoke'])->name('invitations.revoke');
-
-        // Roles
-        Route::get('roles', [\App\Modules\Tenancy\Http\Controllers\RoleController::class, 'index'])->name('roles.index');
-        Route::post('roles', [\App\Modules\Tenancy\Http\Controllers\RoleController::class, 'store'])->name('roles.store');
-        Route::get('roles/{role}', [\App\Modules\Tenancy\Http\Controllers\RoleController::class, 'show'])->name('roles.show');
     });
 
     Route::middleware(['auth', \App\Modules\Tenancy\Middleware\ResolveTenant::class])->group(function () {
