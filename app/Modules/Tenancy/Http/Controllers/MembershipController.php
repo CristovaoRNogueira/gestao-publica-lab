@@ -10,11 +10,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\RedirectResponse;
+use App\Modules\Tenancy\Services\MembershipStatusService;
 
 class MembershipController extends Controller
 {
     public function __construct(
         private readonly TenantContext $tenantContext,
+        private readonly MembershipStatusService $statusService,
     ) {
     }
 
@@ -27,7 +30,7 @@ class MembershipController extends Controller
             abort(403);
         }
 
-        $memberships = Membership::with(['user', 'roles'])
+        $memberships = Membership::with(['user', 'roles.permissions'])
             ->where('tenant_id', $tenant->id)
             ->get();
 
@@ -53,5 +56,30 @@ class MembershipController extends Controller
             'membership' => $membership,
             'availableRoles' => $availableRoles,
         ]);
+    }
+
+    public function activate(Membership $membership): RedirectResponse
+    {
+        Gate::authorize('activate', [Membership::class, $membership]);
+
+        $this->statusService->activate($membership);
+
+        return back()->with('flash', ['success' => 'Membro ativado com sucesso.']);
+    }
+
+    public function deactivate(Membership $membership): RedirectResponse
+    {
+        Gate::authorize('deactivate', [Membership::class, $membership]);
+
+        try {
+            $this->statusService->deactivate($membership);
+        } catch (\App\Modules\Tenancy\Exceptions\CannotRemoveLastAdminException $e) {
+            if (request()->hasHeader('X-Inertia')) {
+                return back()->with('error', $e->getMessage());
+            }
+            abort(409, $e->getMessage());
+        }
+
+        return back()->with('flash', ['success' => 'Membro desativado com sucesso.']);
     }
 }

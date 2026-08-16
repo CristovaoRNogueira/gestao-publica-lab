@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage, useForm } from '@inertiajs/react';
 import { AppLayout } from '../../layouts/AppLayout';
 
 interface User {
@@ -25,6 +25,21 @@ interface PageProps {
 }
 
 export default function Index({ memberships }: PageProps) {
+    const { auth } = usePage<any>().props;
+    const { patch } = useForm();
+
+    const handleActivate = (id: number) => {
+        if (confirm('Tem certeza que deseja ativar este membro?')) {
+            patch(`/memberships/${id}/activate`);
+        }
+    };
+
+    const handleDeactivate = (id: number) => {
+        if (confirm('Tem certeza que deseja desativar este membro? Ele perderá acesso ao tenant.')) {
+            patch(`/memberships/${id}/deactivate`);
+        }
+    };
+
     return (
         <>
             <Head title="Membros" />
@@ -86,9 +101,30 @@ export default function Index({ memberships }: PageProps) {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <Link href={`/memberships/${membership.id}/edit`} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                                Gerenciar Papéis
-                                            </Link>
+                                            <div className="flex justify-end space-x-3">
+                                                {membership.user.id !== auth.user.id && (
+                                                    <>
+                                                        <Link href={`/memberships/${membership.id}/edit`} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                                            Papéis
+                                                        </Link>
+                                                        {membership.is_active ? (
+                                                            <button
+                                                                onClick={() => handleDeactivate(membership.id)}
+                                                                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                                            >
+                                                                Desativar
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => handleActivate(membership.id)}
+                                                                className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                                                            >
+                                                                Ativar
+                                                            </button>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

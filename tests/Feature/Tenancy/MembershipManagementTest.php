@@ -120,18 +120,21 @@ class MembershipManagementTest extends TestCase
         $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userA->id, 'is_active' => true]);
         $this->grantPermission($tenantA, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
 
+        $userB = User::factory()->create();
+        $membershipB = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userB->id, 'is_active' => true]);
+
         Role::create(['tenant_id' => $tenantA->id, 'name' => 'Role A', 'slug' => 'role-a']);
         Role::create(['tenant_id' => $tenantA->id, 'name' => 'Role B', 'slug' => 'role-b']);
         Role::create(['tenant_id' => $tenantB->id, 'name' => 'Role C', 'slug' => 'role-c']);
 
         $response = $this->actingAs($userA)
             ->withSession(['tenant_id' => $tenantA->id])
-            ->get("/memberships/{$membershipA->id}/edit");
+            ->get("/memberships/{$membershipB->id}/edit");
 
         $response->assertStatus(200);
         $response->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Membership/Edit')
-            ->where('membership.id', $membershipA->id)
+            ->where('membership.id', $membershipB->id)
             ->has('availableRoles', 3) // +1 da Role do grantPermission
         );
     }
@@ -231,7 +234,6 @@ class MembershipManagementTest extends TestCase
             ->withSession(['tenant_id' => $tenant->id])
             ->delete("/memberships/{$membershipA->id}/roles/{$adminRole->id}", [], ['X-Inertia' => 'true']);
 
-        $response->assertRedirect();
-        $response->assertSessionHas('error');
+        $response->assertForbidden();
     }
 }

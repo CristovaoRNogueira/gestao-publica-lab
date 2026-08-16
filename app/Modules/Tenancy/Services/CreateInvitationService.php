@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use App\Modules\Tenancy\Notifications\TenantInvitationNotification;
 use Illuminate\Validation\ValidationException;
+use App\Modules\Tenancy\Enums\PermissionSlug;
 
 class CreateInvitationService
 {
@@ -17,7 +18,16 @@ class CreateInvitationService
         $normalizedEmail = strtolower(trim($email));
 
         // Ensure role belongs to tenant
-        $role = Role::where('id', $roleId)->where('tenant_id', $tenantId)->firstOrFail();
+        $role = Role::with('permissions')->where('id', $roleId)->where('tenant_id', $tenantId)->firstOrFail();
+
+        // Prevent Privilege Escalation
+        $requiresAdmin = $role->permissions->contains('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
+        if ($requiresAdmin) {
+            $inviterMembership = $inviter->memberships()->where('tenant_id', $tenantId)->where('is_active', true)->first();
+            if (!$inviterMembership || !$inviterMembership->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value)) {
+                throw ValidationException::withMessages(['role_id' => 'Você não tem permissão para convidar administradores.']);
+            }
+        }
 
         // Check if user is already a member (case-insensitive)
         $user = User::whereRaw('LOWER(email) = ?', [$normalizedEmail])->first();

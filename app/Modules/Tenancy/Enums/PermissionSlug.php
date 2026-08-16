@@ -4,6 +4,7 @@ namespace App\Modules\Tenancy\Enums;
 
 enum PermissionSlug: string
 {
+    case MEMBERSHIPS_MANAGE = 'memberships.manage';
     case MEMBERSHIPS_ROLES_MANAGE = 'memberships.roles.manage';
     case ROLES_VIEW = 'roles.view';
     case ROLES_CREATE = 'roles.create';
@@ -20,6 +21,7 @@ enum PermissionSlug: string
     public function label(): string
     {
         return match ($this) {
+            self::MEMBERSHIPS_MANAGE => 'Ativar/Desativar Membros',
             self::MEMBERSHIPS_ROLES_MANAGE => 'Gerenciar Papéis de Associação',
             self::ROLES_VIEW => 'Visualizar Papéis',
             self::ROLES_CREATE => 'Criar Papéis',
@@ -37,6 +39,7 @@ enum PermissionSlug: string
     public function description(): string
     {
         return match ($this) {
+            self::MEMBERSHIPS_MANAGE => 'Permite ativar e desativar membros do tenant.',
             self::MEMBERSHIPS_ROLES_MANAGE => 'Permite gerenciar a atribuição e revogação de papéis das associações dentro do tenant.',
             self::ROLES_VIEW => 'Permite visualizar todos os papéis do tenant.',
             self::ROLES_CREATE => 'Permite criar novos papéis no tenant.',

@@ -57,6 +57,12 @@ Route::middleware('auth')->group(function () {
         Route::resource('memberships', \App\Modules\Tenancy\Http\Controllers\MembershipController::class)
             ->only(['index', 'edit']);
 
+        Route::patch('memberships/{membership}/activate', [\App\Modules\Tenancy\Http\Controllers\MembershipController::class, 'activate'])
+            ->name('memberships.activate');
+
+        Route::patch('memberships/{membership}/deactivate', [\App\Modules\Tenancy\Http\Controllers\MembershipController::class, 'deactivate'])
+            ->name('memberships.deactivate');
+
         Route::post('memberships/{membership}/roles', [\App\Modules\Tenancy\Http\Controllers\MembershipRoleController::class, 'store'])
             ->name('memberships.roles.store');
 

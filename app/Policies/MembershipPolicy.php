@@ -21,20 +21,48 @@ class MembershipPolicy
 
     public function manageRoles(User $user, Membership $targetMembership): bool
     {
+        if ($user->id === $targetMembership->user_id) {
+            return false;
+        }
+
         return $this->belongsToActiveTenant($targetMembership)
             && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false);
     }
 
     public function assignRole(User $user, Membership $targetMembership): bool
     {
+        if ($user->id === $targetMembership->user_id) {
+            return false;
+        }
+
         return $this->belongsToActiveTenant($targetMembership)
             && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false);
     }
 
     public function revokeRole(User $user, Membership $targetMembership): bool
     {
+        if ($user->id === $targetMembership->user_id) {
+            return false;
+        }
+
         return $this->belongsToActiveTenant($targetMembership)
             && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false);
+    }
+
+    public function activate(User $user, Membership $targetMembership): bool
+    {
+        return $this->belongsToActiveTenant($targetMembership)
+            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_MANAGE->value) ?? false);
+    }
+
+    public function deactivate(User $user, Membership $targetMembership): bool
+    {
+        if ($user->id === $targetMembership->user_id) {
+            return false;
+        }
+
+        return $this->belongsToActiveTenant($targetMembership)
+            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_MANAGE->value) ?? false);
     }
 
     private function belongsToActiveTenant(Membership $membership): bool
