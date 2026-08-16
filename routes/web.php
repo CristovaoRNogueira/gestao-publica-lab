@@ -27,6 +27,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('secretarias', \App\Modules\Secretaria\Http\Controllers\SecretariaController::class)
             ->only(['index', 'create', 'store', 'edit', 'update']);
 
+        Route::resource('memberships', \App\Modules\Tenancy\Http\Controllers\MembershipController::class)
+            ->only(['index', 'edit']);
+
         Route::post('memberships/{membership}/roles', [\App\Modules\Tenancy\Http\Controllers\MembershipRoleController::class, 'store'])
             ->name('memberships.roles.store');
 

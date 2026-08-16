@@ -34,12 +34,15 @@ class MembershipRoleController extends Controller
         try {
             $this->roleAssignmentService->assignRole($actorMembership, $membership, $request->integer('role_id'));
         } catch (\App\Modules\Tenancy\Exceptions\CannotAssignRoleToInactiveMembershipException $e) {
+            if (request()->hasHeader('X-Inertia')) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['role_id' => $e->getMessage()]);
+            }
             abort(422, $e->getMessage());
         } catch (InvalidArgumentException $e) {
             abort(403, $e->getMessage());
         }
 
-        return back();
+        return back()->with('success', 'Papel atribuído com sucesso.');
     }
 
     public function destroy(Membership $membership, Role $role): RedirectResponse|Response
@@ -54,11 +57,14 @@ class MembershipRoleController extends Controller
         try {
             $this->roleAssignmentService->revokeRole($actorMembership, $membership, $role);
         } catch (CannotRemoveLastAdminException $e) {
+            if (request()->hasHeader('X-Inertia')) {
+                return back()->with('error', $e->getMessage());
+            }
             abort(409, $e->getMessage());
         } catch (InvalidArgumentException $e) {
             abort(403, $e->getMessage());
         }
 
-        return back();
+        return back()->with('success', 'Papel removido com sucesso.');
     }
 }
