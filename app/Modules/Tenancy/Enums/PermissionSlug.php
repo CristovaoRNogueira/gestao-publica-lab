@@ -18,39 +18,57 @@ enum PermissionSlug: string
     case INVITATIONS_VIEW = 'invitations.view';
     case INVITATIONS_MANAGE = 'invitations.manage';
 
+    public static function defaultAdminSlugs(): array
+    {
+        return [
+            self::MEMBERSHIPS_MANAGE->value,
+            self::MEMBERSHIPS_ROLES_MANAGE->value,
+            self::INVITATIONS_VIEW->value,
+            self::INVITATIONS_MANAGE->value,
+            self::ROLES_VIEW->value,
+            self::ROLES_CREATE->value,
+            self::ROLES_UPDATE->value,
+            self::ROLES_DELETE->value,
+            self::ROLES_PERMISSIONS_MANAGE->value,
+            self::SECRETARIAS_VIEW->value,
+            self::SECRETARIAS_CREATE->value,
+            self::SECRETARIAS_UPDATE->value,
+        ];
+    }
+
     public function label(): string
     {
         return match ($this) {
-            self::MEMBERSHIPS_MANAGE => 'Ativar/Desativar Membros',
-            self::MEMBERSHIPS_ROLES_MANAGE => 'Gerenciar Papéis de Associação',
-            self::ROLES_VIEW => 'Visualizar Papéis',
-            self::ROLES_CREATE => 'Criar Papéis',
-            self::ROLES_UPDATE => 'Editar Papéis',
-            self::ROLES_DELETE => 'Excluir Papéis',
-            self::ROLES_PERMISSIONS_MANAGE => 'Gerenciar Permissões de Papéis',
-            self::SECRETARIAS_VIEW => 'Visualizar Secretarias',
-            self::SECRETARIAS_CREATE => 'Criar Secretarias',
-            self::SECRETARIAS_UPDATE => 'Editar Secretarias',
-            self::INVITATIONS_VIEW => 'Visualizar Convites',
-            self::INVITATIONS_MANAGE => 'Gerenciar Convites',
+            self::MEMBERSHIPS_MANAGE => 'Gerenciar acesso de pessoas',
+            self::MEMBERSHIPS_ROLES_MANAGE => 'Definir funções dos membros',
+            self::ROLES_VIEW => 'Visualizar funções',
+            self::ROLES_CREATE => 'Criar funções',
+            self::ROLES_UPDATE => 'Editar funções',
+            self::ROLES_DELETE => 'Excluir funções',
+            self::ROLES_PERMISSIONS_MANAGE => 'Alterar permissões das funções',
+            self::SECRETARIAS_VIEW => 'Visualizar secretarias',
+            self::SECRETARIAS_CREATE => 'Criar secretarias',
+            self::SECRETARIAS_UPDATE => 'Editar secretarias',
+            self::INVITATIONS_VIEW => 'Visualizar convites',
+            self::INVITATIONS_MANAGE => 'Gerenciar convites',
         };
     }
 
     public function description(): string
     {
         return match ($this) {
-            self::MEMBERSHIPS_MANAGE => 'Permite ativar e desativar membros do tenant.',
-            self::MEMBERSHIPS_ROLES_MANAGE => 'Permite gerenciar a atribuição e revogação de papéis das associações dentro do tenant.',
-            self::ROLES_VIEW => 'Permite visualizar todos os papéis do tenant.',
-            self::ROLES_CREATE => 'Permite criar novos papéis no tenant.',
-            self::ROLES_UPDATE => 'Permite atualizar os dados dos papéis do tenant.',
-            self::ROLES_DELETE => 'Permite excluir papéis do tenant.',
-            self::ROLES_PERMISSIONS_MANAGE => 'Permite gerenciar as permissões atreladas a cada papel do tenant.',
-            self::SECRETARIAS_VIEW => 'Permite visualizar a lista e os detalhes das secretarias do tenant.',
-            self::SECRETARIAS_CREATE => 'Permite criar novas secretarias no tenant.',
-            self::SECRETARIAS_UPDATE => 'Permite atualizar os dados das secretarias do tenant.',
-            self::INVITATIONS_VIEW => 'Permite visualizar a lista e detalhes dos convites do tenant.',
-            self::INVITATIONS_MANAGE => 'Permite criar, revogar e reenviar convites do tenant.',
+            self::MEMBERSHIPS_MANAGE => 'Permite ativar e desativar membros.',
+            self::MEMBERSHIPS_ROLES_MANAGE => 'Permite definir as funções que cada pessoa exerce.',
+            self::ROLES_VIEW => 'Permite visualizar todas as funções.',
+            self::ROLES_CREATE => 'Permite criar novas funções.',
+            self::ROLES_UPDATE => 'Permite atualizar os dados das funções.',
+            self::ROLES_DELETE => 'Permite excluir funções.',
+            self::ROLES_PERMISSIONS_MANAGE => 'Permite gerenciar as permissões atreladas a cada função.',
+            self::SECRETARIAS_VIEW => 'Permite visualizar a lista e os detalhes das secretarias.',
+            self::SECRETARIAS_CREATE => 'Permite criar novas secretarias.',
+            self::SECRETARIAS_UPDATE => 'Permite atualizar os dados das secretarias.',
+            self::INVITATIONS_VIEW => 'Permite visualizar a lista e detalhes dos convites.',
+            self::INVITATIONS_MANAGE => 'Permite criar, revogar e reenviar convites.',
         };
     }
 }

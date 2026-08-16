@@ -55,7 +55,7 @@ export default function Edit({ membership, availableRoles }: PageProps) {
     }
 
     function handleRevoke(id: number) {
-        if (window.confirm('Tem certeza que deseja remover este papel do usuário?')) {
+        if (window.confirm('Tem certeza que deseja remover esta função do usuário?')) {
             router.delete(`/memberships/${membership.id}/roles/${id}`, {
                 preserveScroll: true
             });
@@ -70,7 +70,7 @@ export default function Edit({ membership, availableRoles }: PageProps) {
 
     return (
         <>
-            <Head title={`Gerenciar Papéis - ${membership.user.name}`} />
+            <Head title={`Gerenciar Funções - ${membership.user.name}`} />
 
             {activeToast && (
                 <Toast
@@ -83,7 +83,7 @@ export default function Edit({ membership, availableRoles }: PageProps) {
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        Gerenciar Papéis: {membership.user.name}
+                        Gerenciar Funções: {membership.user.name}
                     </h1>
                     <Link href="/memberships" className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
                         &larr; Voltar para Membros
@@ -93,12 +93,12 @@ export default function Edit({ membership, availableRoles }: PageProps) {
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
                     <div className="px-4 py-5 sm:p-6">
                         <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
-                            Atribuir Novo Papel
+                            Atribuir Nova Função
                         </h3>
                         <form onSubmit={handleAssign} className="flex gap-4 items-start">
                             <div className="flex-1 max-w-sm">
                                 <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Selecione um papel
+                                    Selecione uma função
                                 </label>
                                 <select
                                     id="role"
@@ -127,7 +127,7 @@ export default function Edit({ membership, availableRoles }: PageProps) {
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
                     <div className="px-4 py-5 sm:p-6">
                         <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
-                            Papéis Atuais
+                            Funções Atuais
                         </h3>
                         {membership.roles.length > 0 ? (
                             <div className="overflow-x-auto">
@@ -169,7 +169,7 @@ export default function Edit({ membership, availableRoles }: PageProps) {
                             </div>
                         ) : (
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Este usuário não possui nenhum papel atribuído.
+                                Este usuário não possui nenhuma função atribuída.
                             </p>
                         )}
                     </div>

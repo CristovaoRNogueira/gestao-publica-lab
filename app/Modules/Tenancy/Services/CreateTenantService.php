@@ -59,17 +59,7 @@ class CreateTenantService
                 'is_active' => true,
             ]);
 
-            $expectedSlugs = [
-                PermissionSlug::MEMBERSHIPS_MANAGE->value,
-                PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
-                PermissionSlug::INVITATIONS_VIEW->value,
-                PermissionSlug::INVITATIONS_MANAGE->value,
-                PermissionSlug::ROLES_VIEW->value,
-                PermissionSlug::ROLES_CREATE->value,
-                PermissionSlug::ROLES_UPDATE->value,
-                PermissionSlug::ROLES_DELETE->value,
-                PermissionSlug::ROLES_PERMISSIONS_MANAGE->value,
-            ];
+            $expectedSlugs = PermissionSlug::defaultAdminSlugs();
 
             // 3. Find the global Permissions (fails if catalog is not seeded)
             $permissions = Permission::whereIn('slug', $expectedSlugs)->get();

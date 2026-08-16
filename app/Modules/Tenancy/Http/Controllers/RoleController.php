@@ -48,7 +48,15 @@ class RoleController extends Controller
 
         $this->authorize('view', $role);
 
-        $allPermissions = \App\Modules\Tenancy\Models\Permission::orderBy('name')->get();
+        $allPermissions = \App\Modules\Tenancy\Models\Permission::orderBy('name')->get()->map(function ($permission) {
+            $enum = \App\Modules\Tenancy\Enums\PermissionSlug::tryFrom($permission->slug);
+            return [
+                'id' => $permission->id,
+                'slug' => $permission->slug,
+                'label' => $enum ? $enum->label() : $permission->name,
+                'description' => $enum ? $enum->description() : '',
+            ];
+        });
 
         return Inertia::render('Role/Show', [
             'role' => $role,
@@ -81,7 +89,7 @@ class RoleController extends Controller
         $role = $this->roleService->create($request->validated());
 
         return redirect()->route('roles.show', $role->id)
-            ->with('success', 'Papel criado com sucesso.');
+            ->with('success', 'Função criada com sucesso.');
     }
 
     public function update(UpdateRoleRequest $request, Role $role): RedirectResponse
@@ -93,7 +101,7 @@ class RoleController extends Controller
         $this->roleService->update($role, $request->validated());
 
         return redirect()->route('roles.show', $role->id)
-            ->with('success', 'Papel atualizado com sucesso.');
+            ->with('success', 'Função atualizada com sucesso.');
     }
 
     public function destroy(Role $role): RedirectResponse
@@ -105,7 +113,7 @@ class RoleController extends Controller
         try {
             $this->roleService->delete($role);
             return redirect()->route('roles.index')
-                ->with('success', 'Papel excluído com sucesso.');
+                ->with('success', 'Função excluída com sucesso.');
         } catch (CannotDeleteRoleInUseException $e) {
             abort(409, $e->getMessage());
         }

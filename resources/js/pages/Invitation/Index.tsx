@@ -67,7 +67,7 @@ export default function Index({ invitations }: PageProps) {
             <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <div className="mb-6 flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        Convites do Tenant
+                        Convites da Prefeitura
                     </h1>
                     {auth.capabilities.includes('invitations.manage') && (
                         <Link
@@ -85,7 +85,7 @@ export default function Index({ invitations }: PageProps) {
                             <thead className="bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">E-mail</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Papel</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Função</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Convidante</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Expiração</th>

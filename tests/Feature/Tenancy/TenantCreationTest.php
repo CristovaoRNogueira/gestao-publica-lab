@@ -67,20 +67,10 @@ class TenantCreationTest extends TestCase
         $this->assertEquals($tenant->id, $role->tenant_id);
 
         // Validate Capabilities
-        $this->assertEquals(9, $role->permissions()->count());
+        $this->assertEquals(12, $role->permissions()->count());
 
         $capabilities = $role->permissions()->pluck('slug')->toArray();
-        $expectedCapabilities = [
-            PermissionSlug::MEMBERSHIPS_MANAGE->value,
-            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
-            PermissionSlug::INVITATIONS_VIEW->value,
-            PermissionSlug::INVITATIONS_MANAGE->value,
-            PermissionSlug::ROLES_VIEW->value,
-            PermissionSlug::ROLES_CREATE->value,
-            PermissionSlug::ROLES_UPDATE->value,
-            PermissionSlug::ROLES_DELETE->value,
-            PermissionSlug::ROLES_PERMISSIONS_MANAGE->value,
-        ];
+        $expectedCapabilities = PermissionSlug::defaultAdminSlugs();
 
         sort($capabilities);
         sort($expectedCapabilities);
