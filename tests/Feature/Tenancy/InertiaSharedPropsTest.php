@@ -85,6 +85,8 @@ class InertiaSharedPropsTest extends TestCase
     public function test_shared_props_flash_messages()
     {
         $user = User::factory()->create();
+        $tenant = Tenant::create(['name' => 'Active', 'slug' => 'active']);
+        $user->memberships()->create(['tenant_id' => $tenant->id, 'is_active' => true]);
 
         $this->actingAs($user)
             ->withSession([

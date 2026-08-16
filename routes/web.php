@@ -19,9 +19,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/tenant/select', [TenantController::class, 'select'])->name('tenant.select');
     Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
 
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/onboarding', [TenantController::class, 'create'])->name('tenants.create');
 
     Route::middleware(['auth', \App\Modules\Tenancy\Middleware\ResolveTenant::class])->group(function () {
         Route::resource('secretarias', \App\Modules\Secretaria\Http\Controllers\SecretariaController::class)

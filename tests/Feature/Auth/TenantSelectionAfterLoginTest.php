@@ -144,10 +144,6 @@ class TenantSelectionAfterLoginTest extends TestCase
             ->withSession(['tenant_id' => $tenant->id])
             ->get('/dashboard');
 
-        $response->assertStatus(200);
-        $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
-            ->component('Dashboard')
-            ->where('auth.tenant', null)
-        );
+        $response->assertRedirect('/onboarding');
     }
 }

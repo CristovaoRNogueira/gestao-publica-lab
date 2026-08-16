@@ -43,6 +43,14 @@ class TenantController extends Controller
     }
 
     /**
+     * Show the onboarding form for creating the first Tenant.
+     */
+    public function create()
+    {
+        return \Inertia\Inertia::render('Tenancy/Onboarding');
+    }
+
+    /**
      * Create a new Tenant, assigning the authenticated user as the owner.
      */
     public function store(CreateTenantRequest $request, CreateTenantService $service): RedirectResponse
@@ -53,7 +61,7 @@ class TenantController extends Controller
             // Automatically select the newly created tenant
             $request->session()->put('tenant_id', $tenant->id);
 
-            return redirect()->intended('/dashboard')->with('success', 'Tenant criado com sucesso.');
+            return redirect('/dashboard')->with('success', 'Tenant criado com sucesso.');
         } catch (TenantSlugAlreadyExistsException $e) {
             throw ValidationException::withMessages([
                 'slug' => 'O slug gerado ou fornecido já está em uso por outro tenant.',
