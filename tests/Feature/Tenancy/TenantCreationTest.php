@@ -168,8 +168,63 @@ class TenantCreationTest extends TestCase
 
         $service = app(\App\Modules\Tenancy\Services\CreateTenantService::class);
         $service->execute($user, [
-            'name' => str_repeat('A', 500), // Exceeds DB column size, will throw QueryException (value too long)
+            'name' => null, // Violates NOT NULL constraint, triggering QueryException in both Postgres and SQLite
             'slug' => 'valid-slug',
         ]);
+    }
+
+    public function test_authenticated_user_without_membership_is_redirected_to_onboarding()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/dashboard');
+
+        $response->assertRedirect('/onboarding');
+    }
+
+    public function test_authenticated_user_with_only_inactive_memberships_is_redirected_to_onboarding()
+    {
+        $user = User::factory()->create();
+        $tenant = Tenant::create(['name' => 'Inactive', 'slug' => 'inactive']);
+        Membership::create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'is_active' => false,
+        ]);
+
+        $response = $this->actingAs($user)->get('/dashboard');
+
+        $response->assertRedirect('/onboarding');
+    }
+
+    public function test_authenticated_user_with_membership_accesses_dashboard_normally()
+    {
+        $user = User::factory()->create();
+        $tenant = Tenant::create(['name' => 'Active', 'slug' => 'active']);
+        Membership::create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($user)->get('/dashboard');
+
+        $response->assertOk();
+    }
+
+    public function test_onboarding_route_returns_200_for_authenticated_user()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/onboarding');
+
+        $response->assertOk();
+    }
+
+    public function test_onboarding_route_redirects_to_login_for_guest()
+    {
+        $response = $this->get('/onboarding');
+
+        $response->assertRedirect('/login');
     }
 }
