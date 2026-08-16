@@ -58,6 +58,10 @@ class RoleService
             throw new InvalidArgumentException('Role não pertence ao tenant ativo.');
         }
 
+        if (isset($data['slug']) && $data['slug'] !== $role->slug) {
+            throw ValidationException::withMessages(['slug' => 'O slug do papel não pode ser alterado.']);
+        }
+
         try {
             $role->update($data);
             return $role;
@@ -90,6 +94,11 @@ class RoleService
             // Verificar se existem registros em membership_role
             if ($role->memberships()->exists()) {
                 throw new CannotDeleteRoleInUseException();
+            }
+
+            // Verificar se existem convites pendentes
+            if ($role->tenantInvitations()->where('status', 'pending')->exists()) {
+                throw new CannotDeleteRoleInUseException('Não é possível excluir um papel que está sendo usado em convites pendentes.');
             }
 
             // Excluir Role

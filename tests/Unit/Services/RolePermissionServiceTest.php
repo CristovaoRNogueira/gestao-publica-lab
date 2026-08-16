@@ -23,7 +23,7 @@ class RolePermissionServiceTest extends TestCase
     {
         parent::setUp();
         $this->seed(\Database\Seeders\PermissionCatalogSeeder::class);
-        $this->service = new RolePermissionService();
+        $this->service = new RolePermissionService(app(\App\Modules\Tenancy\Context\TenantContext::class));
     }
 
     public function test_attach_permission_is_idempotent()

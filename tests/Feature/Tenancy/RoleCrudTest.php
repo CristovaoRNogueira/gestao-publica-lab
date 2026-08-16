@@ -8,6 +8,7 @@ use App\Modules\Tenancy\Models\Membership;
 use App\Modules\Tenancy\Models\Role;
 use App\Modules\Tenancy\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class RoleCrudTest extends TestCase
@@ -70,7 +71,10 @@ class RoleCrudTest extends TestCase
         $response = $this->actingAs($user)->withSession(['tenant_id' => $tenantA->id])->get('/roles');
 
         $response->assertStatus(200);
-        $response->assertJsonPath('data.0.id', $roleA->id);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Role/Index')
+            ->where('roles.data.0.id', $roleA->id)
+        );
     }
 
     public function test_show_role_requires_ownership_and_permission()
@@ -171,12 +175,12 @@ class RoleCrudTest extends TestCase
 
         $this->actingAs($user)->withSession(['tenant_id' => $tenantA->id])->put("/roles/{$roleA->id}", [
             'name' => 'Updated Role A',
-            'slug' => 'updated-role-a'
+            'slug' => 'role-a'
         ])->assertRedirect("/roles/{$roleA->id}");
 
         $roleA->refresh();
         $this->assertEquals('Updated Role A', $roleA->name);
-        $this->assertEquals('updated-role-a', $roleA->slug);
+        $this->assertEquals('role-a', $roleA->slug); // slug is immutable
     }
 
     public function test_delete_role_requires_ownership_and_permission()

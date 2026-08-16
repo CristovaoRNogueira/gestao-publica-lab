@@ -78,17 +78,17 @@ class RolePermissionTest extends TestCase
         $permissionToAttach = Permission::where('slug', PermissionSlug::SECRETARIAS_VIEW->value)->first();
 
         // First attach
-        $response = $this->postJson("/roles/{$role->id}/permissions", [
+        $response = $this->post("/roles/{$role->id}/permissions", [
             'permission_id' => $permissionToAttach->id,
         ]);
-        $response->assertStatus(200);
+        $response->assertStatus(302);
         $this->assertEquals(2, $role->permissions()->count());
 
         // Second attach (Idempotent)
-        $response = $this->postJson("/roles/{$role->id}/permissions", [
+        $response = $this->post("/roles/{$role->id}/permissions", [
             'permission_id' => $permissionToAttach->id,
         ]);
-        $response->assertStatus(200);
+        $response->assertStatus(302);
         $this->assertEquals(2, $role->permissions()->count());
     }
 
@@ -101,6 +101,52 @@ class RolePermissionTest extends TestCase
             'permission_id' => $permissionToAttach->id,
         ]);
         $response->assertStatus(403);
+    }
+
+    public function test_critical_permission_cannot_be_granted_by_operator_lacking_critical_set()
+    {
+        [$user, $tenant, $role] = $this->createMemberWithPermission(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value);
+        $criticalPermission = Permission::where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value)->first();
+
+        // Operator has only ROLES_PERMISSIONS_MANAGE, missing MEMBERSHIPS_ROLES_MANAGE.
+        $response = $this->postJson("/roles/{$role->id}/permissions", [
+            'permission_id' => $criticalPermission->id,
+        ]);
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['permission_id']);
+        $this->assertFalse($role->permissions()->where('permission_id', $criticalPermission->id)->exists());
+    }
+
+    public function test_critical_permission_can_be_granted_by_operator_with_full_critical_set()
+    {
+        [$user, $tenant, $role] = $this->createMemberWithPermission(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value);
+
+        // Give operator the other critical permission as well
+        $operatorMembership = Membership::where('user_id', $user->id)->first();
+        $adminRole2 = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin Role 2', 'slug' => 'admin-role-2']);
+        $criticalPermission = Permission::where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value)->first();
+        $adminRole2->permissions()->attach($criticalPermission->id);
+        $operatorMembership->roles()->attach($adminRole2->id);
+
+        $response = $this->post("/roles/{$role->id}/permissions", [
+            'permission_id' => $criticalPermission->id,
+        ]);
+        $response->assertStatus(302);
+        $response->assertSessionHas('success');
+        $this->assertTrue($role->permissions()->where('permission_id', $criticalPermission->id)->exists());
+    }
+
+    public function test_non_critical_permission_can_still_be_managed_according_to_existing_rules()
+    {
+        [$user, $tenant, $role] = $this->createMemberWithPermission(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value);
+        $nonCriticalPermission = Permission::where('slug', PermissionSlug::SECRETARIAS_VIEW->value)->first();
+
+        $response = $this->post("/roles/{$role->id}/permissions", [
+            'permission_id' => $nonCriticalPermission->id,
+        ]);
+        $response->assertStatus(302);
+        $response->assertSessionHas('success');
+        $this->assertTrue($role->permissions()->where('permission_id', $nonCriticalPermission->id)->exists());
     }
 
     public function test_attach_non_existent_permission_returns_422()
@@ -152,8 +198,9 @@ class RolePermissionTest extends TestCase
         $permissionToAttach = Permission::where('slug', PermissionSlug::SECRETARIAS_VIEW->value)->first();
         $role->permissions()->attach($permissionToAttach->id);
 
-        $response = $this->deleteJson("/roles/{$role->id}/permissions/{$permissionToAttach->id}");
-        $response->assertStatus(200);
+        $response = $this->delete("/roles/{$role->id}/permissions/{$permissionToAttach->id}");
+        $response->assertStatus(302);
+        $response->assertSessionHas('success');
         $this->assertEquals(1, $role->permissions()->count());
     }
 
@@ -171,8 +218,9 @@ class RolePermissionTest extends TestCase
         [$user, $tenant, $role] = $this->createMemberWithPermission(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value);
         $permission = Permission::where('slug', PermissionSlug::ROLES_PERMISSIONS_MANAGE->value)->first();
 
-        $response = $this->deleteJson("/roles/{$role->id}/permissions/{$permission->id}");
-        $response->assertStatus(409);
+        $response = $this->delete("/roles/{$role->id}/permissions/{$permission->id}");
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['permission_id']);
         $this->assertEquals(1, $role->permissions()->count());
     }
 
@@ -188,8 +236,9 @@ class RolePermissionTest extends TestCase
         $role2->permissions()->attach($permission->id);
         $membership2->roles()->attach($role2->id);
 
-        $response = $this->deleteJson("/roles/{$role->id}/permissions/{$permission->id}");
-        $response->assertStatus(200);
+        $response = $this->delete("/roles/{$role->id}/permissions/{$permission->id}");
+        $response->assertStatus(302);
+        $response->assertSessionHas('success');
         $this->assertEquals(0, $role->permissions()->count());
     }
 
