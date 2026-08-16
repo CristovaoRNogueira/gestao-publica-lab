@@ -106,7 +106,7 @@ class MembershipRoleTest extends TestCase
         $response = $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
             ->delete("/memberships/{$actorMembership->id}/roles/{$adminRole->id}");
 
-        $response->assertStatus(409);
+        $response->assertForbidden();
         $this->assertTrue($actorMembership->fresh()->roles->contains($adminRole->id));
     }
 
@@ -175,12 +175,12 @@ class MembershipRoleTest extends TestCase
         $adminRole = $this->grantPermission($tenant, $actorMembership, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value, 'Admin', 'admin');
         $supervisorRole = $this->grantPermission($tenant, $actorMembership, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value, 'Supervisor', 'supervisor');
 
-        // Should allow removing adminRole because supervisorRole also provides manage
+        // Should block removing adminRole because it's self-management
         $response = $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
             ->delete("/memberships/{$actorMembership->id}/roles/{$adminRole->id}");
 
-        $response->assertRedirect();
-        $this->assertFalse($actorMembership->fresh()->roles->contains($adminRole->id));
+        $response->assertForbidden();
+        $this->assertTrue($actorMembership->fresh()->roles->contains($adminRole->id));
         $this->assertTrue($actorMembership->fresh()->roles->contains($supervisorRole->id));
     }
 }
