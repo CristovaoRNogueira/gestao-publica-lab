@@ -14,6 +14,9 @@ enum PermissionSlug: string
     case SECRETARIAS_CREATE = 'secretarias.create';
     case SECRETARIAS_UPDATE = 'secretarias.update';
 
+    case INVITATIONS_VIEW = 'invitations.view';
+    case INVITATIONS_MANAGE = 'invitations.manage';
+
     public function label(): string
     {
         return match ($this) {
@@ -26,6 +29,8 @@ enum PermissionSlug: string
             self::SECRETARIAS_VIEW => 'Visualizar Secretarias',
             self::SECRETARIAS_CREATE => 'Criar Secretarias',
             self::SECRETARIAS_UPDATE => 'Editar Secretarias',
+            self::INVITATIONS_VIEW => 'Visualizar Convites',
+            self::INVITATIONS_MANAGE => 'Gerenciar Convites',
         };
     }
 
@@ -41,6 +46,8 @@ enum PermissionSlug: string
             self::SECRETARIAS_VIEW => 'Permite visualizar a lista e os detalhes das secretarias do tenant.',
             self::SECRETARIAS_CREATE => 'Permite criar novas secretarias no tenant.',
             self::SECRETARIAS_UPDATE => 'Permite atualizar os dados das secretarias do tenant.',
+            self::INVITATIONS_VIEW => 'Permite visualizar a lista e detalhes dos convites do tenant.',
+            self::INVITATIONS_MANAGE => 'Permite criar, revogar e reenviar convites do tenant.',
         };
     }
 }

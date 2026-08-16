@@ -14,13 +14,19 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
 });
 
+// Public global route (no auth required to view)
+Route::get('invites/{token}', [\App\Modules\Tenancy\Http\Controllers\AcceptInvitationController::class, 'show'])->name('invites.show');
+
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('onboarding', [TenantController::class, 'create'])->name('tenants.create');
     Route::post('/tenant/select', [TenantController::class, 'select'])->name('tenant.select');
     Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
 
-    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/onboarding', [TenantController::class, 'create'])->name('tenants.create');
+    // Public global routes (but require auth)
+    Route::post('invites/{token}', [\App\Modules\Tenancy\Http\Controllers\AcceptInvitationController::class, 'accept'])->name('invites.accept');
 
     Route::middleware(['auth'])->prefix('platform')->name('platform.')->group(function () {
         Route::get('tenants', [\App\Modules\Platform\Http\Controllers\PlatformTenantController::class, 'index'])->name('tenants.index');
@@ -30,6 +36,18 @@ Route::middleware('auth')->group(function () {
         Route::get('users', [\App\Modules\Platform\Http\Controllers\PlatformUserController::class, 'index'])->name('users.index');
         Route::get('users/{user}', [\App\Modules\Platform\Http\Controllers\PlatformUserController::class, 'show'])->name('users.show');
         Route::patch('memberships/{membership}/status', [\App\Modules\Platform\Http\Controllers\PlatformUserController::class, 'updateMembershipStatus'])->name('memberships.status.update');
+    });
+
+    // Tenant-scoped routes
+    Route::middleware(['auth', \App\Modules\Tenancy\Middleware\ResolveTenant::class])->group(function () {        // Invitations
+        Route::post('invitations', [\App\Modules\Tenancy\Http\Controllers\InvitationController::class, 'store'])->name('invitations.store');
+        Route::post('invitations/{invitation}/resend', [\App\Modules\Tenancy\Http\Controllers\InvitationController::class, 'resend'])->name('invitations.resend');
+        Route::patch('invitations/{invitation}/revoke', [\App\Modules\Tenancy\Http\Controllers\InvitationController::class, 'revoke'])->name('invitations.revoke');
+
+        // Roles
+        Route::get('roles', [\App\Modules\Tenancy\Http\Controllers\RoleController::class, 'index'])->name('roles.index');
+        Route::post('roles', [\App\Modules\Tenancy\Http\Controllers\RoleController::class, 'store'])->name('roles.store');
+        Route::get('roles/{role}', [\App\Modules\Tenancy\Http\Controllers\RoleController::class, 'show'])->name('roles.show');
     });
 
     Route::middleware(['auth', \App\Modules\Tenancy\Middleware\ResolveTenant::class])->group(function () {
