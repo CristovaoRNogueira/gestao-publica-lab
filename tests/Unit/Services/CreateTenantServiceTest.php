@@ -56,19 +56,9 @@ class CreateTenantServiceTest extends TestCase
         $this->assertEquals('Administrador', $role->name);
 
         // Global permissions exist
-        $expectedSlugs = [
-            PermissionSlug::MEMBERSHIPS_MANAGE->value,
-            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
-            PermissionSlug::INVITATIONS_VIEW->value,
-            PermissionSlug::INVITATIONS_MANAGE->value,
-            PermissionSlug::ROLES_VIEW->value,
-            PermissionSlug::ROLES_CREATE->value,
-            PermissionSlug::ROLES_UPDATE->value,
-            PermissionSlug::ROLES_DELETE->value,
-            PermissionSlug::ROLES_PERMISSIONS_MANAGE->value,
-        ];
+        $expectedSlugs = PermissionSlug::defaultAdminSlugs();
         $permissions = Permission::whereIn('slug', $expectedSlugs)->get();
-        $this->assertEquals(9, $permissions->count());
+        $this->assertEquals(12, $permissions->count());
 
         // Role has permissions
         foreach ($permissions as $permission) {
@@ -103,17 +93,7 @@ class CreateTenantServiceTest extends TestCase
         // 1. Cada Tenant possui sua própria Role admin
         $this->assertNotEquals($role1->id, $role2->id);
 
-        $expectedSlugs = [
-            PermissionSlug::MEMBERSHIPS_MANAGE->value,
-            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
-            PermissionSlug::INVITATIONS_VIEW->value,
-            PermissionSlug::INVITATIONS_MANAGE->value,
-            PermissionSlug::ROLES_VIEW->value,
-            PermissionSlug::ROLES_CREATE->value,
-            PermissionSlug::ROLES_UPDATE->value,
-            PermissionSlug::ROLES_DELETE->value,
-            PermissionSlug::ROLES_PERMISSIONS_MANAGE->value,
-        ];
+        $expectedSlugs = PermissionSlug::defaultAdminSlugs();
         $permissions = Permission::whereIn('slug', $expectedSlugs)->get();
 
         // 2. Não existe cross-tenant contamination nas permissions das Roles

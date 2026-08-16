@@ -89,7 +89,16 @@ class RoleCrudTest extends TestCase
 
         $this->grantPermission($tenantA, $membershipA, PermissionSlug::ROLES_VIEW->value);
 
-        $this->actingAs($user)->withSession(['tenant_id' => $tenantA->id])->get("/roles/{$roleA->id}")->assertStatus(200);
+        $this->actingAs($user)->withSession(['tenant_id' => $tenantA->id])->get("/roles/{$roleA->id}")
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Role/Show')
+                ->where('role.id', $roleA->id)
+                ->has('allPermissions')
+                ->has('allPermissions.0.label') // label mapped from Enum
+                ->has('allPermissions.0.description')
+            );
+
         $this->actingAs($user)->withSession(['tenant_id' => $tenantA->id])->get("/roles/{$roleB->id}")->assertStatus(404);
     }
 

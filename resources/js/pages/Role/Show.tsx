@@ -4,8 +4,9 @@ import { useState } from 'react';
 
 interface Permission {
     id: number;
-    name: string;
+    label: string;
     slug: string;
+    description: string;
 }
 
 interface User {
@@ -84,7 +85,7 @@ export default function Show({ role, allPermissions }: PageProps) {
 
     return (
         <>
-            <Head title={`Papel: ${role.name}`} />
+            <Head title={`Função: ${role.name}`} />
             <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <div className="px-4 sm:px-0 mb-6 flex justify-between items-center">
                     <div>
@@ -108,9 +109,9 @@ export default function Show({ role, allPermissions }: PageProps) {
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
                     <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
                         <div>
-                            <h3 className="text-lg leading-6 font-medium text-gray-900">Permissões do Papel</h3>
+                            <h3 className="text-lg leading-6 font-medium text-gray-900">Permissões da Função</h3>
                             <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                                Atribua ou revogue permissões para este papel.
+                                Defina quais ações esta função pode realizar no sistema.
                             </p>
                         </div>
                     </div>
@@ -126,10 +127,10 @@ export default function Show({ role, allPermissions }: PageProps) {
                                         <div className="flex items-center justify-between">
                                             <div>
                                                 <p className={`text-sm font-medium truncate ${critical ? 'text-red-600' : 'text-gray-900'}`}>
-                                                    {permission.name}
+                                                    {permission.label}
                                                     {critical && <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Crítica</span>}
                                                 </p>
-                                                <p className="text-sm text-gray-500">{permission.slug}</p>
+                                                <p className="text-sm text-gray-500">{permission.description}</p>
                                             </div>
                                             <div className="ml-2 flex-shrink-0 flex items-center">
                                                 <button
@@ -162,7 +163,7 @@ export default function Show({ role, allPermissions }: PageProps) {
 
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                     <div className="px-4 py-5 sm:px-6">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">Membros com este papel</h3>
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">Membros com esta função</h3>
                     </div>
                     <div className="border-t border-gray-200">
                         <ul className="divide-y divide-gray-200">
@@ -177,7 +178,7 @@ export default function Show({ role, allPermissions }: PageProps) {
                                 </li>
                             ))}
                             {role.memberships.length === 0 && (
-                                <li className="px-4 py-4 sm:px-6 text-sm text-gray-500">Nenhum membro possui este papel.</li>
+                                <li className="px-4 py-4 sm:px-6 text-sm text-gray-500">Nenhum membro possui esta função.</li>
                             )}
                         </ul>
                     </div>

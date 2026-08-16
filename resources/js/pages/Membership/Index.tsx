@@ -35,7 +35,7 @@ export default function Index({ memberships }: PageProps) {
     };
 
     const handleDeactivate = (id: number) => {
-        if (confirm('Tem certeza que deseja desativar este membro? Ele perderá acesso ao tenant.')) {
+        if (confirm('Tem certeza que deseja desativar este membro? Ele perderá acesso à prefeitura.')) {
             patch(`/memberships/${id}/deactivate`);
         }
     };
@@ -47,7 +47,7 @@ export default function Index({ memberships }: PageProps) {
             <div className="max-w-7xl mx-auto">
                 <div className="mb-6 flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        Membros do Tenant
+                        Membros da Prefeitura
                     </h1>
                 </div>
 
@@ -66,7 +66,7 @@ export default function Index({ memberships }: PageProps) {
                                         Status
                                     </th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                        Papéis
+                                        Funções
                                     </th>
                                     <th scope="col" className="relative px-6 py-3">
                                         <span className="sr-only">Ações</span>
@@ -96,7 +96,7 @@ export default function Index({ memberships }: PageProps) {
                                                         </span>
                                                     ))
                                                 ) : (
-                                                    <span className="text-gray-400 italic">Nenhum papel</span>
+                                                    <span className="text-gray-400 italic">Nenhuma função</span>
                                                 )}
                                             </div>
                                         </td>
@@ -105,7 +105,7 @@ export default function Index({ memberships }: PageProps) {
                                                 {membership.user.id !== auth.user.id && (
                                                     <>
                                                         <Link href={`/memberships/${membership.id}/edit`} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                                            Papéis
+                                                            Funções
                                                         </Link>
                                                         {membership.is_active ? (
                                                             <button
