@@ -29,8 +29,12 @@ class DashboardController extends Controller
             return redirect()->route('pending-approval');
         }
 
-        return redirect()->route('tenants.create');
+        $hasAnyMemberships = $request->user()->memberships()->exists();
 
-        return Inertia::render('Dashboard');
+        if ($hasAnyMemberships) {
+            return redirect()->route('access-denied');
+        }
+
+        return redirect()->route('tenants.create');
     }
 }

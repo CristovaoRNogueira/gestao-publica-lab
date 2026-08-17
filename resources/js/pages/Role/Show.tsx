@@ -32,9 +32,10 @@ interface Role {
 interface PageProps {
     role: Role;
     allPermissions: Permission[];
+    canManagePermissions: boolean;
 }
 
-export default function Show({ role, allPermissions }: PageProps) {
+export default function Show({ role, allPermissions, canManagePermissions }: PageProps) {
     const { auth } = usePage<any>().props;
     const [loading, setLoading] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export default function Show({ role, allPermissions }: PageProps) {
     const rolePermissionIds = new Set(role.permissions.map(p => p.id));
 
     const handleTogglePermission = async (permission: Permission, isAssigned: boolean) => {
-        if (!auth.capabilities.includes('roles.permissions.manage')) return;
+        if (!canManagePermissions) return;
         if (isCritical(permission.slug) && !hasFullCriticalSet) return;
 
         setLoading(permission.id);
@@ -120,7 +121,7 @@ export default function Show({ role, allPermissions }: PageProps) {
                             {allPermissions.map(permission => {
                                 const isAssigned = rolePermissionIds.has(permission.id);
                                 const critical = isCritical(permission.slug);
-                                const canManage = auth.capabilities.includes('roles.permissions.manage') && (!critical || hasFullCriticalSet);
+                                const canManage = canManagePermissions && (!critical || hasFullCriticalSet);
 
                                 return (
                                     <li key={permission.id} className="px-4 py-4 sm:px-6">

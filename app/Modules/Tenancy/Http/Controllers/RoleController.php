@@ -60,7 +60,8 @@ class RoleController extends Controller
 
         return Inertia::render('Role/Show', [
             'role' => $role,
-            'allPermissions' => $allPermissions
+            'allPermissions' => $allPermissions,
+            'canManagePermissions' => auth()->user()->can('managePermissions', $role)
         ]);
     }
 

@@ -31,6 +31,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/pending-approval', \App\Http\Controllers\PendingApprovalController::class)->name('pending-approval');
+    Route::get('/access-denied', function () {
+        return Inertia::render('AccessDenied');
+    })->name('access-denied');
     Route::get('onboarding', [TenantController::class, 'create'])->name('tenants.create');
     Route::post('/tenant/select', [TenantController::class, 'select'])->name('tenant.select');
     Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
@@ -63,6 +66,9 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('memberships', \App\Modules\Tenancy\Http\Controllers\MembershipController::class)
             ->only(['index', 'edit']);
+
+        Route::post('memberships/manual', [\App\Modules\Tenancy\Http\Controllers\MembershipController::class, 'storeManual'])
+            ->name('memberships.manual');
 
         Route::patch('memberships/{membership}/activate', [\App\Modules\Tenancy\Http\Controllers\MembershipController::class, 'activate'])
             ->name('memberships.activate');

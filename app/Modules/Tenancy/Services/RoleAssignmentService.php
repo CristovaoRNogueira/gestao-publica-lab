@@ -132,7 +132,7 @@ class RoleAssignmentService
             })->count();
 
         if ($willStillHaveAdmin <= 1) {
-            throw new CannotRemoveLastAdminException('Não é possível remover a última capacidade administrativa do tenant.');
+            throw new CannotRemoveLastAdminException('Não é possível remover a última capacidade administrativa da organização.');
         }
     }
 

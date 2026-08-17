@@ -57,7 +57,7 @@ class MembershipStatusService
             })->count();
 
         if ($activeAdminCount === 0) {
-            throw new CannotRemoveLastAdminException('Não é possível desativar a última capacidade administrativa do tenant.');
+            throw new CannotRemoveLastAdminException('Não é possível desativar a última capacidade administrativa da organização.');
         }
     }
 

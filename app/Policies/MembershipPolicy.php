@@ -19,6 +19,11 @@ class MembershipPolicy
         return $this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false;
     }
 
+    public function create(User $user): bool
+    {
+        return $this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_MANAGE->value) ?? false;
+    }
+
     public function manageRoles(User $user, Membership $targetMembership): bool
     {
         if ($user->id === $targetMembership->user_id) {
@@ -30,7 +35,9 @@ class MembershipPolicy
         }
 
         return $this->belongsToActiveTenant($targetMembership)
-            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false);
+            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false)
+            && $this->hasAuthorityOver($this->context->getMembership(), $targetMembership)
+            && $this->canManageScope($this->context->getMembership(), $targetMembership);
     }
 
     public function assignRole(User $user, Membership $targetMembership): bool
@@ -44,7 +51,9 @@ class MembershipPolicy
         }
 
         return $this->belongsToActiveTenant($targetMembership)
-            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false);
+            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false)
+            && $this->hasAuthorityOver($this->context->getMembership(), $targetMembership)
+            && $this->canManageScope($this->context->getMembership(), $targetMembership);
     }
 
     public function revokeRole(User $user, Membership $targetMembership): bool
@@ -58,17 +67,25 @@ class MembershipPolicy
         }
 
         return $this->belongsToActiveTenant($targetMembership)
-            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false);
+            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false)
+            && $this->hasAuthorityOver($this->context->getMembership(), $targetMembership)
+            && $this->canManageScope($this->context->getMembership(), $targetMembership);
     }
 
     public function activate(User $user, Membership $targetMembership): bool
     {
+        if ($user->id === $targetMembership->user_id) {
+            return false;
+        }
+
         if (in_array($targetMembership->status, [Membership::STATUS_PENDING, Membership::STATUS_REJECTED])) {
             return false;
         }
 
         return $this->belongsToActiveTenant($targetMembership)
-            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_MANAGE->value) ?? false);
+            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_MANAGE->value) ?? false)
+            && $this->hasAuthorityOver($this->context->getMembership(), $targetMembership)
+            && $this->canManageScope($this->context->getMembership(), $targetMembership);
     }
 
     public function deactivate(User $user, Membership $targetMembership): bool
@@ -82,7 +99,9 @@ class MembershipPolicy
         }
 
         return $this->belongsToActiveTenant($targetMembership)
-            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_MANAGE->value) ?? false);
+            && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_MANAGE->value) ?? false)
+            && $this->hasAuthorityOver($this->context->getMembership(), $targetMembership)
+            && $this->canManageScope($this->context->getMembership(), $targetMembership);
     }
 
     public function approve(User $user, Membership $targetMembership): bool
@@ -125,5 +144,22 @@ class MembershipPolicy
 
         return $tenant !== null
             && $membership->tenant_id === $tenant->id;
+    }
+
+    private function hasAuthorityOver(?Membership $actor, Membership $target): bool
+    {
+        if (!$actor) return false;
+
+        $actorPermissions = $actor->roles->flatMap->permissions->pluck('slug')->unique();
+        $targetPermissions = $target->roles->flatMap->permissions->pluck('slug')->unique();
+
+        return $targetPermissions->diff($actorPermissions)->isEmpty();
+    }
+
+    private function canManageScope(?Membership $actor, Membership $target): bool
+    {
+        if (!$actor) return false;
+        return app(\App\Modules\Tenancy\Services\OrganizationScope::class)
+            ->canManage($actor, $target->organizationUnit);
     }
 }

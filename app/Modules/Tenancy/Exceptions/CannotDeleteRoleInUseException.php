@@ -6,7 +6,7 @@ use Exception;
 
 class CannotDeleteRoleInUseException extends Exception
 {
-    public function __construct($message = "Não é possível excluir um papel que está atribuído a associações.")
+    public function __construct($message = "Não é possível excluir uma função que está atribuída a membros.")
     {
         parent::__construct($message);
     }

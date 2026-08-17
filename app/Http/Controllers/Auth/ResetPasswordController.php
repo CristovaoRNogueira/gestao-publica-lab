@@ -55,10 +55,10 @@ class ResetPasswordController extends Controller
         );
 
         if ($status === Password::PASSWORD_RESET) {
-            return redirect()->route('dashboard')->with('success', __($status));
+            return redirect()->route('dashboard')->with('success', 'Senha definida com sucesso.');
         }
 
         return back()->withInput($request->only('email'))
-            ->withErrors(['email' => __($status)]);
+            ->withErrors(['email' => 'Não foi possível definir a senha. Verifique o link e tente novamente.']);
     }
 }
