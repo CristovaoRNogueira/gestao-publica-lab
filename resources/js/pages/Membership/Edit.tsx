@@ -70,7 +70,7 @@ export default function Edit({ membership, availableRoles }: PageProps) {
 
     return (
         <>
-            <Head title={`Gerenciar Funções - ${membership.user.name}`} />
+            <Head title={`Editar acesso - ${membership.user.name}`} />
 
             {activeToast && (
                 <Toast
@@ -83,7 +83,7 @@ export default function Edit({ membership, availableRoles }: PageProps) {
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        Gerenciar Funções: {membership.user.name}
+                        Editar acesso: {membership.user.name}
                     </h1>
                     <Link href="/memberships" className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
                         &larr; Voltar para Membros
@@ -93,7 +93,7 @@ export default function Edit({ membership, availableRoles }: PageProps) {
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
                     <div className="px-4 py-5 sm:p-6">
                         <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
-                            Atribuir Nova Função
+                            Adicionar função
                         </h3>
                         <form onSubmit={handleAssign} className="flex gap-4 items-start">
                             <div className="flex-1 max-w-sm">
@@ -127,7 +127,7 @@ export default function Edit({ membership, availableRoles }: PageProps) {
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
                     <div className="px-4 py-5 sm:p-6">
                         <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
-                            Funções Atuais
+                            Funções atribuídas
                         </h3>
                         {membership.roles.length > 0 ? (
                             <div className="overflow-x-auto">

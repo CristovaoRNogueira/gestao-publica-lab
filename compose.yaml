@@ -10,7 +10,7 @@ services:
     env_file:
       - path: ./docker/.env
         required: false
-    environment:
+    environment: &workspace-env
       APP_URL: http://localhost:8080
       DB_CONNECTION: pgsql
       DB_HOST: postgres
@@ -28,7 +28,7 @@ services:
         /workspaces/gestao-publica-lab/node_modules
         /home/vscode/.local/share/pnpm
         && exec php-fpm
-    volumes:
+    volumes: &workspace-volumes
       - .:/workspaces/gestao-publica-lab
       - vendor:/workspaces/gestao-publica-lab/vendor
       - node_modules:/workspaces/gestao-publica-lab/node_modules
@@ -98,6 +98,35 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "127.0.0.1:8025:8025"
+    networks:
+      - application
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/workspace/Dockerfile
+    env_file:
+      - path: ./docker/.env
+        required: false
+    environment: *workspace-env
+    command: ["php", "artisan", "queue:work", "--tries=3"]
+    volumes: *workspace-volumes
+    networks:
+      - application
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    profiles:
+      - worker
 
 networks:
   application:
