@@ -36,10 +36,10 @@ class RoleAssignmentServiceTest extends TestCase
         $tenant1 = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
         $tenant2 = Tenant::create(['name' => 'T2', 'slug' => 't2', 'is_active' => true]);
 
-        $actorMembership = Membership::create(['tenant_id' => $tenant1->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $actorMembership = Membership::create(['tenant_id' => $tenant1->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->context->set($tenant1, $actorMembership);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant2->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant2->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $role = Role::create(['tenant_id' => $tenant1->id, 'name' => 'Test', 'slug' => 'test']);
 
         $this->expectException(InvalidArgumentException::class);
@@ -52,10 +52,10 @@ class RoleAssignmentServiceTest extends TestCase
         $tenant1 = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
         $tenant2 = Tenant::create(['name' => 'T2', 'slug' => 't2', 'is_active' => true]);
 
-        $actorMembership = Membership::create(['tenant_id' => $tenant1->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $actorMembership = Membership::create(['tenant_id' => $tenant1->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->context->set($tenant1, $actorMembership);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant1->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant1->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $role = Role::create(['tenant_id' => $tenant2->id, 'name' => 'Test', 'slug' => 'test']);
 
         $this->expectException(ModelNotFoundException::class);
@@ -66,12 +66,12 @@ class RoleAssignmentServiceTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't', 'is_active' => true]);
 
-        $actorMembership1 = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
-        $actorMembership2 = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $actorMembership1 = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
+        $actorMembership2 = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->context->set($tenant, $actorMembership1);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Test', 'slug' => 'test']);
 
         $this->expectException(InvalidArgumentException::class);
@@ -82,7 +82,7 @@ class RoleAssignmentServiceTest extends TestCase
     public function test_assign_role_inactive_membership_throws_exception()
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't', 'is_active' => true]);
-        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->context->set($tenant, $actorMembership);
 
         $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => false]);
@@ -97,12 +97,12 @@ class RoleAssignmentServiceTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't', 'is_active' => true]);
 
-        $actorMembership1 = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
-        $actorMembership2 = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $actorMembership1 = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
+        $actorMembership2 = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->context->set($tenant, $actorMembership1);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Test', 'slug' => 'test']);
 
         $this->expectException(InvalidArgumentException::class);
@@ -113,7 +113,7 @@ class RoleAssignmentServiceTest extends TestCase
     public function test_revoke_role_inactive_membership_is_allowed()
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't', 'is_active' => true]);
-        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->context->set($tenant, $actorMembership);
 
         $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => false]);
@@ -127,10 +127,10 @@ class RoleAssignmentServiceTest extends TestCase
     public function test_revoke_last_admin_role_throws_exception()
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't', 'is_active' => true]);
-        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->context->set($tenant, $actorMembership);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
         $permission = Permission::create(['name' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value, 'slug' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
@@ -145,11 +145,11 @@ class RoleAssignmentServiceTest extends TestCase
     public function test_revoke_admin_role_when_another_active_admin_exists_is_allowed()
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't', 'is_active' => true]);
-        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->context->set($tenant, $actorMembership);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
-        $otherMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
+        $otherMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
         $permission = Permission::create(['name' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value, 'slug' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
@@ -165,10 +165,10 @@ class RoleAssignmentServiceTest extends TestCase
     public function test_revoke_admin_role_when_another_admin_is_inactive_throws_exception()
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't', 'is_active' => true]);
-        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->context->set($tenant, $actorMembership);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $inactiveAdmin = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => false]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
@@ -185,10 +185,10 @@ class RoleAssignmentServiceTest extends TestCase
     public function test_assign_role_idempotent()
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't', 'is_active' => true]);
-        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->context->set($tenant, $actorMembership);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Test', 'slug' => 'test']);
 
         $this->service->assignRole($actorMembership, $targetMembership, $role->id);
@@ -201,10 +201,10 @@ class RoleAssignmentServiceTest extends TestCase
     public function test_revoke_role_idempotent()
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't', 'is_active' => true]);
-        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->context->set($tenant, $actorMembership);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Test', 'slug' => 'test']);
 
         // Revoke when not attached should not throw exception
@@ -215,10 +215,10 @@ class RoleAssignmentServiceTest extends TestCase
     public function test_revoke_unassigned_admin_role_is_idempotent()
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't', 'is_active' => true]);
-        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->context->set($tenant, $actorMembership);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $otherAdminRole = Role::create(['tenant_id' => $tenant->id, 'name' => 'Other Admin', 'slug' => 'other_admin']);
         $permission = Permission::create(['name' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value, 'slug' => \App\Modules\Tenancy\Enums\PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
@@ -239,10 +239,10 @@ class RoleAssignmentServiceTest extends TestCase
     public function test_assign_role_propagates_non_unique_query_exception()
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't', 'is_active' => true]);
-        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->context->set($tenant, $actorMembership);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Test', 'slug' => 'test']);
 
         // Mock the relation to throw a generic QueryException

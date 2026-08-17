@@ -13,7 +13,7 @@ class DashboardController extends Controller
     {
         $hasActiveMemberships = $request->user()
             ->memberships()
-            ->where('is_active', true)
+            ->where('status', \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE)
             ->exists();
 
         if (! $hasActiveMemberships) {

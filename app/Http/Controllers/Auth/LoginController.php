@@ -74,7 +74,7 @@ class LoginController extends Controller
         $user = $request->user();
 
         $activeMemberships = $user->memberships()
-            ->where('is_active', true)
+            ->where('status', \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE)
             ->whereHas('tenant', fn ($q) => $q->where('is_active', true))
             ->get();
 

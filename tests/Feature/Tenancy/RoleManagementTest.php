@@ -25,7 +25,7 @@ class RoleManagementTest extends TestCase
     {
         $user = User::factory()->create();
         $tenant = Tenant::create(['name' => 'Tenant A', 'slug' => 'tenant-a', 'is_active' => true]);
-        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create([
             'tenant_id' => $tenant->id,

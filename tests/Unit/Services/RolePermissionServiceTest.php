@@ -73,7 +73,7 @@ class RolePermissionServiceTest extends TestCase
         $role->permissions()->attach($permission->id);
 
         $user = User::factory()->create();
-        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id]);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $membership->roles()->attach($role->id);
 
         $this->expectException(CannotRemoveLastEffectivePermissionException::class);
@@ -91,7 +91,7 @@ class RolePermissionServiceTest extends TestCase
         $role2->permissions()->attach($permission->id);
 
         $user = User::factory()->create();
-        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id]);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $membership->roles()->attach([$role1->id, $role2->id]);
 
         // Removing from role 1 is fine because role 2 still provides it to the active membership
@@ -111,11 +111,11 @@ class RolePermissionServiceTest extends TestCase
         $role2->permissions()->attach($permission->id);
 
         $user1 = User::factory()->create();
-        $membership1 = Membership::create(['user_id' => $user1->id, 'tenant_id' => $tenant->id]);
+        $membership1 = Membership::create(['user_id' => $user1->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $membership1->roles()->attach($role1->id);
 
         $user2 = User::factory()->create();
-        $membership2 = Membership::create(['user_id' => $user2->id, 'tenant_id' => $tenant->id]);
+        $membership2 = Membership::create(['user_id' => $user2->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $membership2->roles()->attach($role2->id);
 
         // Removing from role 1 is fine because membership 2 still has it via role 2
@@ -134,12 +134,12 @@ class RolePermissionServiceTest extends TestCase
         $role2->permissions()->attach($permission->id);
 
         $user1 = User::factory()->create();
-        $membership1 = Membership::create(['user_id' => $user1->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership1 = Membership::create(['user_id' => $user1->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $membership1->roles()->attach($role1->id);
 
         $user2 = User::factory()->create();
         // Membership 2 is inactive
-        $membership2 = Membership::create(['user_id' => $user2->id, 'tenant_id' => $tenant->id, 'is_active' => false]);
+        $membership2 = Membership::create(['user_id' => $user2->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
         $membership2->roles()->attach($role2->id);
 
         // Removing from role 1 should fail because membership 2 is inactive and cannot provide the capability

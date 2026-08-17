@@ -41,7 +41,7 @@ class MembershipTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'Active', 'slug' => 'active', 'is_active' => true]);
         $user = User::factory()->create();
-        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $resolver = app(TenantResolver::class);
         $resolved = $resolver->resolve($tenant->id, $user);
@@ -56,7 +56,7 @@ class MembershipTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'Active', 'slug' => 'active', 'is_active' => true]);
         $user = User::factory()->create();
-        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => false]);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
 
         $resolver = app(TenantResolver::class);
         $resolved = $resolver->resolve($tenant->id, $user);
@@ -80,7 +80,7 @@ class MembershipTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 'res-inactive', 'is_active' => true]);
         $user = User::factory()->create();
-        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => false]);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
 
         $resolver = app(TenantResolver::class);
         $result = $resolver->resolve($tenant->id, $user);
@@ -94,8 +94,8 @@ class MembershipTest extends TestCase
         $tenantB = Tenant::create(['name' => 'Tenant B', 'slug' => 'res-b', 'is_active' => true]);
         $user = User::factory()->create();
 
-        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
-        $membershipB = Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
+        $membershipB = Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $resolver = app(TenantResolver::class);
 
@@ -122,8 +122,8 @@ class MembershipTest extends TestCase
         $tenantB = Tenant::create(['name' => 'B', 'slug' => 'mix-b', 'is_active' => true]);
 
         $user = User::factory()->create(['password' => 'password']);
-        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
-        Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'is_active' => false]);
+        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
+        Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
 
         // Only one active membership → auto-select tenant A
         $this->post('/login', [
@@ -150,7 +150,7 @@ class MembershipTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'Ctx', 'slug' => 'ctx', 'is_active' => true]);
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $response = $this->actingAs($user)
             ->withSession(['tenant_id' => $tenant->id])
@@ -169,7 +169,7 @@ class MembershipTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'Consistent', 'slug' => 'consistent', 'is_active' => true]);
         $user = User::factory()->create();
-        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $response = $this->actingAs($user)
             ->withSession(['tenant_id' => $tenant->id])
@@ -201,7 +201,7 @@ class MembershipTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'Policy', 'slug' => 'policy', 'is_active' => true]);
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->grantPermission($tenant, $membership, PermissionSlug::SECRETARIAS_VIEW->value);
 

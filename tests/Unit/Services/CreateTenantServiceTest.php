@@ -45,7 +45,7 @@ class CreateTenantServiceTest extends TestCase
             ->first();
 
         $this->assertNotNull($membership);
-        $this->assertTrue($membership->is_active);
+        $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE, $membership->status);
 
         // Admin role was created
         $role = Role::where('tenant_id', $tenant->id)

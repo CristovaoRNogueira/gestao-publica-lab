@@ -16,11 +16,11 @@ class MembershipStatusService
         DB::transaction(function () use ($membership) {
             Tenant::lockForUpdate()->find($membership->tenant_id);
 
-            if ($membership->is_active) {
+            if ($membership->status === Membership::STATUS_ACTIVE) {
                 return;
             }
 
-            $membership->update(['is_active' => true]);
+            $membership->update(['status' => Membership::STATUS_ACTIVE]);
         });
     }
 
@@ -29,7 +29,7 @@ class MembershipStatusService
         DB::transaction(function () use ($membership) {
             Tenant::lockForUpdate()->find($membership->tenant_id);
 
-            if (!$membership->is_active) {
+            if ($membership->status !== Membership::STATUS_ACTIVE) {
                 return;
             }
 
@@ -41,7 +41,7 @@ class MembershipStatusService
                 $this->checkEffectiveCapacity($membership);
             }
 
-            $membership->update(['is_active' => false]);
+            $membership->update(['status' => Membership::STATUS_INACTIVE]);
         });
     }
 
@@ -50,7 +50,7 @@ class MembershipStatusService
         $tenantId = $targetMembership->tenant_id;
 
         $activeAdminCount = Membership::where('tenant_id', $tenantId)
-            ->where('is_active', true)
+            ->where('status', Membership::STATUS_ACTIVE)
             ->where('id', '!=', $targetMembership->id)
             ->whereHas('roles.permissions', function ($query) {
                 $query->where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);

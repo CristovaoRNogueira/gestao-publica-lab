@@ -23,7 +23,7 @@ class CreateInvitationService
         // Prevent Privilege Escalation
         $requiresAdmin = $role->permissions->contains('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
         if ($requiresAdmin) {
-            $inviterMembership = $inviter->memberships()->where('tenant_id', $tenantId)->where('is_active', true)->first();
+            $inviterMembership = $inviter->memberships()->where('tenant_id', $tenantId)->where('status', \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE)->first();
             if (!$inviterMembership || !$inviterMembership->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value)) {
                 throw ValidationException::withMessages(['role_id' => 'Você não tem permissão para convidar administradores.']);
             }

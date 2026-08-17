@@ -9,13 +9,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Membership extends Model
 {
-    protected $fillable = ['tenant_id', 'user_id', 'is_active'];
+    const STATUS_PENDING = 'pending';
+    const STATUS_ACTIVE = 'active';
+    const STATUS_INACTIVE = 'inactive';
+    const STATUS_REJECTED = 'rejected';
+
+    protected $fillable = ['tenant_id', 'user_id', 'status', 'organization_unit_id'];
 
     protected function casts(): array
     {
-        return [
-            'is_active' => 'boolean',
-        ];
+        return [];
     }
 
     public function tenant(): BelongsTo
@@ -42,5 +45,10 @@ class Membership extends Model
         }
 
         return false;
+    }
+
+    public function organizationUnit(): BelongsTo
+    {
+        return $this->belongsTo(OrganizationUnit::class);
     }
 }

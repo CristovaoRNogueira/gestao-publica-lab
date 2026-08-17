@@ -29,7 +29,7 @@ class TenantInvitationUITest extends TestCase
         $membership = Membership::create([
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,
-            'is_active' => true,
+            'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE,
         ]);
 
         $role = Role::create([

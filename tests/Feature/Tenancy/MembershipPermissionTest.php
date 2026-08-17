@@ -20,7 +20,7 @@ class MembershipPermissionTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->assertFalse($membership->hasPermission('view.dashboard'));
     }
@@ -29,7 +29,7 @@ class MembershipPermissionTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
         $membership->roles()->attach($role);
@@ -43,7 +43,7 @@ class MembershipPermissionTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
         $permission = Permission::create(['name' => 'View Dashboard', 'slug' => 'view.dashboard']);
@@ -60,7 +60,7 @@ class MembershipPermissionTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $roleA = Role::create(['tenant_id' => $tenant->id, 'name' => 'Role A', 'slug' => 'role-a']);
         $roleB = Role::create(['tenant_id' => $tenant->id, 'name' => 'Role B', 'slug' => 'role-b']);
@@ -87,8 +87,8 @@ class MembershipPermissionTest extends TestCase
 
         $user = User::factory()->create();
 
-        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'is_active' => true]);
-        $membershipB = Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
+        $membershipB = Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $roleB = Role::create(['tenant_id' => $tenantB->id, 'name' => 'Role B', 'slug' => 'role-b']);
         $permissionX = Permission::create(['name' => 'Perm X', 'slug' => 'perm.x']);
@@ -103,7 +103,7 @@ class MembershipPermissionTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
         $permission = Permission::create(['name' => 'View Dashboard', 'slug' => 'view.dashboard']);
@@ -123,7 +123,7 @@ class MembershipPermissionTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
         $permission = Permission::create(['name' => 'View Dashboard', 'slug' => 'view.dashboard']);

@@ -20,7 +20,7 @@ interface Membership {
     id: number;
     user: User;
     roles: Role[];
-    is_active: boolean;
+    status: string;
 }
 
 interface PageProps {

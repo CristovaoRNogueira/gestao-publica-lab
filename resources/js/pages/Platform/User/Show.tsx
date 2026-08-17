@@ -16,7 +16,7 @@ interface Tenant {
 interface Membership {
     id: number;
     tenant_id: number;
-    is_active: boolean;
+    status: string;
     tenant: Tenant;
     roles: Role[];
 }
@@ -33,10 +33,10 @@ export default function Show() {
     const { user } = usePage<{ user: User }>().props;
 
     const handleStatusToggle = (membership: Membership) => {
-        const action = membership.is_active ? 'desativar' : 'ativar';
+        const action = membership.status === 'active' ? 'desativar' : 'ativar';
         if (window.confirm(`Tem certeza que deseja ${action} o acesso deste usuário à organização ${membership.tenant.name}?`)) {
             router.patch(`/platform/memberships/${membership.id}/status`, {
-                is_active: !membership.is_active,
+                status: membership.status === 'active' ? 'inactive' : 'active',
             }, {
                 preserveScroll: true,
             });
@@ -132,15 +132,25 @@ export default function Show() {
                                                 </div>
                                             </div>
                                             <div className="ml-4 flex-shrink-0 flex items-center space-x-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${membership.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
-                                                    {membership.is_active ? 'Ativo' : 'Inativo'}
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                    membership.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                                    membership.status === 'inactive' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                                                    membership.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                                    'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                                                }`}>
+                                                    {membership.status === 'active' ? 'Ativo' :
+                                                     membership.status === 'inactive' ? 'Inativo' :
+                                                     membership.status === 'pending' ? 'Aguardando aprovação' :
+                                                     membership.status === 'rejected' ? 'Acesso recusado' : membership.status}
                                                 </span>
-                                                <button
-                                                    onClick={() => handleStatusToggle(membership)}
-                                                    className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
-                                                >
-                                                    {membership.is_active ? 'Suspender Acesso' : 'Restaurar Acesso'}
-                                                </button>
+                                                {(membership.status === 'active' || membership.status === 'inactive') && (
+                                                    <button
+                                                        onClick={() => handleStatusToggle(membership)}
+                                                        className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
+                                                    >
+                                                        {membership.status === 'active' ? 'Suspender Acesso' : 'Restaurar Acesso'}
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </li>

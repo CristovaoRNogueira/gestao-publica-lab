@@ -87,7 +87,7 @@ class RbacStructuralTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Staff', 'slug' => 'staff']);
 

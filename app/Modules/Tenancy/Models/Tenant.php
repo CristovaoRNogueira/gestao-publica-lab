@@ -38,4 +38,9 @@ class Tenant extends Model
     {
         return $this->hasMany(TenantInvitation::class);
     }
+
+    public function organizationUnits(): HasMany
+    {
+        return $this->hasMany(OrganizationUnit::class);
+    }
 }

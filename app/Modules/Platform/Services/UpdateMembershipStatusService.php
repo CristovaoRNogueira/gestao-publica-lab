@@ -13,10 +13,10 @@ class UpdateMembershipStatusService
      * @param bool $isActive
      * @return void
      */
-    public function execute(Membership $membership, bool $isActive): void
+    public function execute(Membership $membership, string $status): void
     {
         $membership->update([
-            'is_active' => $isActive,
+            'status' => $status,
         ]);
     }
 }

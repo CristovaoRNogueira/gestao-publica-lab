@@ -22,7 +22,7 @@ class UpdateMembershipStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'is_active' => ['required', 'boolean'],
+            'status' => ['required', 'string', 'in:' . \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE . ',' . \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE],
         ];
     }
 }
