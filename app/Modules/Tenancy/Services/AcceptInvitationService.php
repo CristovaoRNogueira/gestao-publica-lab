@@ -42,15 +42,21 @@ class AcceptInvitationService
             // Create membership or activate existing inactive one
             $membership = $user->memberships()->firstOrCreate(
                 ['tenant_id' => $invitation->tenant_id],
-                ['is_active' => true]
+                [
+                    'status' => \App\Modules\Tenancy\Models\Membership::STATUS_PENDING,
+                    'organization_unit_id' => $invitation->organization_unit_id,
+                ]
             );
 
             // If it already existed and was active, throw an exception
-            if (!$membership->wasRecentlyCreated && $membership->is_active) {
+            if (!$membership->wasRecentlyCreated && $membership->status === \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE) {
                 throw new \Exception('Usuário já é membro ativo deste Tenant.', 409);
             }
 
-            $membership->update(['is_active' => true]);
+            $membership->update([
+                'status' => \App\Modules\Tenancy\Models\Membership::STATUS_PENDING,
+                'organization_unit_id' => $invitation->organization_unit_id,
+            ]);
 
             // Sync the role
             $membership->roles()->syncWithoutDetaching([$invitation->role_id]);

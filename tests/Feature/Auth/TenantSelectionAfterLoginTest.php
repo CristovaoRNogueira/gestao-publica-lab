@@ -36,7 +36,7 @@ class TenantSelectionAfterLoginTest extends TestCase
         ]);
 
         $user = User::factory()->create(['password' => 'password']);
-        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->post('/login', [
             'email' => $user->email,
@@ -66,8 +66,8 @@ class TenantSelectionAfterLoginTest extends TestCase
         $tenant2 = Tenant::create(['name' => 'Tenant 2', 'slug' => 't2', 'is_active' => true]);
 
         $user = User::factory()->create(['password' => 'password']);
-        Membership::create(['tenant_id' => $tenant1->id, 'user_id' => $user->id, 'is_active' => true]);
-        Membership::create(['tenant_id' => $tenant2->id, 'user_id' => $user->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenant1->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
+        Membership::create(['tenant_id' => $tenant2->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->post('/login', [
             'email' => $user->email,
@@ -96,7 +96,7 @@ class TenantSelectionAfterLoginTest extends TestCase
         ]);
 
         $user = User::factory()->create();
-        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $response = $this->actingAs($user)
             ->withSession(['tenant_id' => $tenant->id])
@@ -115,7 +115,7 @@ class TenantSelectionAfterLoginTest extends TestCase
         ]);
 
         $user = User::factory()->create(['password' => 'password']);
-        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->post('/login', [
             'email' => $user->email,
@@ -135,7 +135,7 @@ class TenantSelectionAfterLoginTest extends TestCase
         ]);
 
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         // Revoke membership after it was granted
         $membership->delete();

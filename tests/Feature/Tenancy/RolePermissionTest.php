@@ -25,7 +25,7 @@ class RolePermissionTest extends TestCase
     {
         $user = User::factory()->create();
         $tenant = Tenant::create(['name' => 'Tenant A', 'slug' => 'tenant-a']);
-        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create([
             'tenant_id' => $tenant->id,
@@ -231,7 +231,7 @@ class RolePermissionTest extends TestCase
 
         // Create another user with the same permission
         $user2 = User::factory()->create();
-        $membership2 = Membership::create(['user_id' => $user2->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership2 = Membership::create(['user_id' => $user2->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $role2 = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin Role 2', 'slug' => 'admin-role-2']);
         $role2->permissions()->attach($permission->id);
         $membership2->roles()->attach($role2->id);

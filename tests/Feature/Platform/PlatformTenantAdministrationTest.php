@@ -39,7 +39,7 @@ class PlatformTenantAdministrationTest extends TestCase
     {
         $user = User::factory()->create();
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
-        Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->actingAs($user)->get('/platform/tenants')->assertStatus(403);
     }
@@ -116,7 +116,7 @@ class PlatformTenantAdministrationTest extends TestCase
         $admin = $this->createPlatformAdmin([PlatformPermissionSlug::TENANTS_MANAGE->value]);
         $user = User::factory()->create();
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
-        Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         // Disable tenant
         $this->actingAs($admin)->patch("/platform/tenants/{$tenant->id}/status", [

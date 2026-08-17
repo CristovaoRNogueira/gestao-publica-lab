@@ -40,7 +40,7 @@ class PlatformUserAdministrationTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 'test', 'is_active' => true]);
         $user = User::factory()->create();
-        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
         $membership->roles()->sync([$role->id]);
@@ -120,8 +120,8 @@ class PlatformUserAdministrationTest extends TestCase
         $tenant1 = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
         $tenant2 = Tenant::create(['name' => 'T2', 'slug' => 't2', 'is_active' => true]);
 
-        Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant1->id, 'is_active' => true]);
-        Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant2->id, 'is_active' => false]);
+        Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant1->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
+        Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant2->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
 
         $response = $this->get('/platform/users/' . $targetUser->id);
         $response->assertInertia(fn ($page) => $page
@@ -137,7 +137,7 @@ class PlatformUserAdministrationTest extends TestCase
         $targetUser = User::factory()->create();
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
 
-        $membership = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $role1 = Role::create(['tenant_id' => $tenant->id, 'name' => 'R1', 'slug' => 'r1']);
         $role2 = Role::create(['tenant_id' => $tenant->id, 'name' => 'R2', 'slug' => 'r2']);
 
@@ -156,12 +156,12 @@ class PlatformUserAdministrationTest extends TestCase
 
         $targetUser = User::factory()->create();
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
-        $membership = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
-        $this->patch('/platform/memberships/' . $membership->id . '/status', ['is_active' => false])
+        $this->patch('/platform/memberships/' . $membership->id . '/status', ['status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE])
             ->assertForbidden();
 
-        $this->assertTrue($membership->fresh()->is_active);
+        $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE, $membership->fresh()->status);
     }
 
     public function test_platform_admin_can_update_membership_status()
@@ -171,12 +171,12 @@ class PlatformUserAdministrationTest extends TestCase
 
         $targetUser = User::factory()->create();
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
-        $membership = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
-        $this->patch('/platform/memberships/' . $membership->id . '/status', ['is_active' => false])
+        $this->patch('/platform/memberships/' . $membership->id . '/status', ['status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE])
             ->assertRedirect();
 
-        $this->assertFalse($membership->fresh()->is_active);
+        $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE, $membership->fresh()->status);
     }
 
     public function test_deactivated_membership_blocks_real_tenant_access()
@@ -186,7 +186,7 @@ class PlatformUserAdministrationTest extends TestCase
 
         $targetUser = User::factory()->create();
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
-        $membership = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         // Target User has memberships.roles.manage
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
         $permission = \App\Modules\Tenancy\Models\Permission::where('slug', 'memberships.roles.manage')->first();
@@ -194,8 +194,8 @@ class PlatformUserAdministrationTest extends TestCase
         $membership->roles()->sync([$role->id]);
 
         $this->actingAs($platformAdmin);
-        $this->patch('/platform/memberships/' . $membership->id . '/status', ['is_active' => false]);
-        $this->assertFalse($membership->fresh()->is_active);
+        $this->patch('/platform/memberships/' . $membership->id . '/status', ['status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
+        $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE, $membership->fresh()->status);
 
         // 2. Usar o usuário dessa Membership
         auth()->logout();
@@ -273,7 +273,7 @@ class PlatformUserAdministrationTest extends TestCase
 
         // N=1 membership
         $tenant1 = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
-        $mem1 = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant1->id, 'is_active' => true]);
+        $mem1 = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant1->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $role1 = Role::create(['tenant_id' => $tenant1->id, 'name' => 'R1', 'slug' => 'r1']);
         $mem1->roles()->sync([$role1->id]);
 
@@ -284,7 +284,7 @@ class PlatformUserAdministrationTest extends TestCase
         // N=5 memberships
         for ($i=2; $i<=5; $i++) {
             $t = Tenant::create(['name' => 'T'.$i, 'slug' => 't'.$i, 'is_active' => true]);
-            $m = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $t->id, 'is_active' => true]);
+            $m = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $t->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
             $r = Role::create(['tenant_id' => $t->id, 'name' => 'R'.$i, 'slug' => 'r'.$i]);
             $m->roles()->sync([$r->id]);
         }
@@ -296,7 +296,7 @@ class PlatformUserAdministrationTest extends TestCase
         // N=25 memberships
         for ($i=6; $i<=25; $i++) {
             $t = Tenant::create(['name' => 'T'.$i, 'slug' => 't'.$i, 'is_active' => true]);
-            $m = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $t->id, 'is_active' => true]);
+            $m = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $t->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
             $r = Role::create(['tenant_id' => $t->id, 'name' => 'R'.$i, 'slug' => 'r'.$i]);
             $m->roles()->sync([$r->id]);
         }
@@ -317,7 +317,7 @@ class PlatformUserAdministrationTest extends TestCase
 
         $targetUser = User::factory()->create();
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
-        $membership = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership = Membership::create(['user_id' => $targetUser->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $gateArguments = [];
         \Illuminate\Support\Facades\Gate::after(function ($user, $ability, $result, $arguments) use (&$gateArguments) {
@@ -331,7 +331,7 @@ class PlatformUserAdministrationTest extends TestCase
         $this->assertInstanceOf(User::class, $gateArguments['platform.users.view'][0] ?? null, 'Show should receive target User.');
         $this->assertEquals($targetUser->id, $gateArguments['platform.users.view'][0]->id);
 
-        $this->patch('/platform/memberships/' . $membership->id . '/status', ['is_active' => false]);
+        $this->patch('/platform/memberships/' . $membership->id . '/status', ['status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
         $this->assertInstanceOf(Membership::class, $gateArguments['platform.users.manage'][0] ?? null, 'Update status should receive target Membership.');
         $this->assertEquals($membership->id, $gateArguments['platform.users.manage'][0]->id);
     }

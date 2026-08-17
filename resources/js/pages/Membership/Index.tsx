@@ -17,7 +17,7 @@ interface Membership {
     id: number;
     user: User;
     roles: Role[];
-    is_active: boolean;
+    status: string;
 }
 
 interface PageProps {
@@ -49,6 +49,14 @@ export default function Index({ memberships }: PageProps) {
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                         Membros da Prefeitura
                     </h1>
+                    {auth.capabilities.includes('invitations.manage') && (
+                        <Link
+                            href="/invitations/create"
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                            Convidar pessoa
+                        </Link>
+                    )}
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
@@ -83,8 +91,16 @@ export default function Index({ memberships }: PageProps) {
                                             {membership.user.email}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${membership.is_active ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'}`}>
-                                                {membership.is_active ? 'Ativo' : 'Inativo'}
+                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                membership.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' :
+                                                membership.status === 'inactive' ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' :
+                                                membership.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' :
+                                                'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100'
+                                            }`}>
+                                                {membership.status === 'active' ? 'Ativo' :
+                                                 membership.status === 'inactive' ? 'Inativo' :
+                                                 membership.status === 'pending' ? 'Aguardando aprovação' :
+                                                 membership.status === 'rejected' ? 'Acesso recusado' : membership.status}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
@@ -102,27 +118,30 @@ export default function Index({ memberships }: PageProps) {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex justify-end space-x-3">
-                                                {membership.user.id !== auth.user.id && (
+                                                {membership.user.id !== auth.user.id ? (
                                                     <>
                                                         <Link href={`/memberships/${membership.id}/edit`} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                                            Funções
+                                                            Gerenciar funções
                                                         </Link>
-                                                        {membership.is_active ? (
+                                                        {membership.status === 'active' && (
                                                             <button
                                                                 onClick={() => handleDeactivate(membership.id)}
                                                                 className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                                             >
-                                                                Desativar
+                                                                Desativar acesso
                                                             </button>
-                                                        ) : (
+                                                        )}
+                                                        {membership.status === 'inactive' && (
                                                             <button
                                                                 onClick={() => handleActivate(membership.id)}
                                                                 className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
                                                             >
-                                                                Ativar
+                                                                Ativar acesso
                                                             </button>
                                                         )}
                                                     </>
+                                                ) : (
+                                                    <span className="text-gray-500 italic">Você</span>
                                                 )}
                                             </div>
                                         </td>

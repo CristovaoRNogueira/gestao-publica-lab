@@ -58,7 +58,7 @@ class TenantCreationTest extends TestCase
             ->first();
 
         $this->assertNotNull($membership);
-        $this->assertTrue($membership->is_active);
+        $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE, $membership->status);
 
         // Validate Admin Role
         $this->assertEquals(1, $membership->roles()->count());
@@ -203,7 +203,7 @@ class TenantCreationTest extends TestCase
         Membership::create([
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,
-            'is_active' => true,
+            'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE,
         ]);
 
         $response = $this->actingAs($user)->get('/dashboard');

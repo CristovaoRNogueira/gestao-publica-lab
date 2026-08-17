@@ -25,7 +25,7 @@ class TenantMembershipGovernanceTest extends TestCase
     private function createTenantUserWithPermissions(Tenant $tenant, array $permissions): User
     {
         $user = User::factory()->create();
-        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Custom Role', 'slug' => 'custom-role-'.uniqid()]);
 
@@ -121,7 +121,7 @@ class TenantMembershipGovernanceTest extends TestCase
         $this->patch("/memberships/{$targetMembership->id}/deactivate")->assertRedirect();
 
         $targetMembership->refresh();
-        $this->assertFalse($targetMembership->is_active);
+        $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE, $targetMembership->status);
     }
 
     public function test_authorized_admin_can_reactivate_member()
@@ -130,7 +130,7 @@ class TenantMembershipGovernanceTest extends TestCase
         $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_MANAGE->value]);
         $target = $this->createTenantUserWithPermissions($tenant, []);
         $targetMembership = Membership::where('user_id', $target->id)->first();
-        $targetMembership->update(['is_active' => false]);
+        $targetMembership->update(['status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
 
         $this->actingAs($admin);
         session(['tenant_id' => $tenant->id]);
@@ -138,7 +138,7 @@ class TenantMembershipGovernanceTest extends TestCase
         $this->patch("/memberships/{$targetMembership->id}/activate")->assertRedirect();
 
         $targetMembership->refresh();
-        $this->assertTrue($targetMembership->is_active);
+        $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE, $targetMembership->status);
     }
 
     public function test_cannot_deactivate_self()
@@ -201,7 +201,7 @@ class TenantMembershipGovernanceTest extends TestCase
         $response->assertStatus(409); // Now expects the HTTP 409 conflict pattern
 
         $admin2Membership->refresh();
-        $this->assertTrue($admin2Membership->is_active);
+        $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE, $admin2Membership->status);
     }
 
     public function test_inactive_membership_receives_403_on_tenant_route()
@@ -209,7 +209,7 @@ class TenantMembershipGovernanceTest extends TestCase
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't10', 'is_active' => true]);
         $user = $this->createTenantUserWithPermissions($tenant, []);
         $membership = Membership::where('user_id', $user->id)->first();
-        $membership->update(['is_active' => false]);
+        $membership->update(['status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
 
         $this->actingAs($user);
         session(['tenant_id' => $tenant->id]);
@@ -239,14 +239,14 @@ class TenantMembershipGovernanceTest extends TestCase
         $response->assertRedirect();
 
         $adminBMembership->refresh();
-        $this->assertFalse($adminBMembership->is_active);
+        $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE, $adminBMembership->status);
 
         $adminAMembership = Membership::where('user_id', $adminA->id)->first();
-        $this->assertTrue($adminAMembership->is_active);
+        $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE, $adminAMembership->status);
 
         $this->assertTrue(
             Membership::where('tenant_id', $tenant->id)
-                ->where('is_active', true)
+                ->where('status', \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE)
                 ->whereHas('roles.permissions', fn($q) => $q->where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value))
                 ->count() >= 1
         );
@@ -259,7 +259,7 @@ class TenantMembershipGovernanceTest extends TestCase
             PermissionSlug::ROLES_VIEW->value
         ]);
         $userMembership = Membership::where('user_id', $user->id)->first();
-        $userMembership->update(['is_active' => false]);
+        $userMembership->update(['status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
 
         $this->actingAs($user);
         session(['tenant_id' => $tenant->id]);

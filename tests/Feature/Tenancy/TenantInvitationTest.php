@@ -27,7 +27,7 @@ class TenantInvitationTest extends TestCase
     private function createAdmin(Tenant $tenant): User
     {
         $admin = User::factory()->create();
-        $membership = Membership::create(['user_id' => $admin->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership = Membership::create(['user_id' => $admin->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
         // Sync permissions manually for the test
         $permissions = \App\Modules\Tenancy\Models\Permission::whereIn('slug', [
@@ -77,7 +77,7 @@ class TenantInvitationTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't2', 'is_active' => true]);
         $user = User::factory()->create();
-        Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $role = Role::create(['name' => 'Test', 'slug' => 'test-role2', 'tenant_id' => $tenant->id]);
 
         $this->actingAs($user);
@@ -126,7 +126,7 @@ class TenantInvitationTest extends TestCase
         $role = Role::create(['name' => 'Test', 'slug' => 'test-role101', 'tenant_id' => $tenant->id]);
 
         $user = User::factory()->create(['email' => 'USER@EXAMPLE.COM']);
-        Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->actingAs($admin);
         session(['tenant_id' => $tenant->id]);
@@ -290,7 +290,7 @@ class TenantInvitationTest extends TestCase
         $this->assertDatabaseHas('memberships', [
             'user_id' => $user->id,
             'tenant_id' => $invitation->tenant_id,
-            'is_active' => true,
+            'status' => \App\Modules\Tenancy\Models\Membership::STATUS_PENDING,
         ]);
 
         $membership = Membership::where('user_id', $user->id)->where('tenant_id', $invitation->tenant_id)->first();
@@ -300,8 +300,8 @@ class TenantInvitationTest extends TestCase
     public function test_user_with_active_membership_cannot_accept_invitation()
     {
         $user = User::factory()->create(['email' => 'user@example.com']);
-        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't13', 'is_active' => true]);
-        Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't13', 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
+        Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $token = Str::random(32);
         $invitation = TenantInvitation::factory()->create([
@@ -322,8 +322,8 @@ class TenantInvitationTest extends TestCase
     public function test_user_with_inactive_membership_reactivates_and_accepts()
     {
         $user = User::factory()->create(['email' => 'user@example.com']);
-        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't14', 'is_active' => true]);
-        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'is_active' => false]);
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't14', 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
 
         $token = Str::random(32);
         $invitation = TenantInvitation::factory()->create([
@@ -340,7 +340,7 @@ class TenantInvitationTest extends TestCase
         $this->assertEquals('accepted', $invitation->status);
 
         $membership->refresh();
-        $this->assertTrue($membership->is_active);
+        $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_PENDING, $membership->status);
         $this->assertTrue($membership->roles->contains($invitation->role_id));
     }
 }

@@ -22,7 +22,7 @@ class PlatformUserController extends Controller
         $users = User::query()
             ->withCount([
                 'memberships as active_memberships_count' => function ($query) {
-                    $query->where('is_active', true);
+                    $query->where('status', \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE);
                 }
             ])
             ->orderBy('name')
@@ -54,7 +54,7 @@ class PlatformUserController extends Controller
     ): RedirectResponse {
         Gate::authorize('platform.users.manage', $membership);
 
-        $service->execute($membership, $request->validated('is_active'));
+        $service->execute($membership, $request->validated('status'));
 
         return back()->with('success', 'Status da vinculação atualizado com sucesso.');
     }

@@ -74,7 +74,7 @@ class RolePermissionService
     private function detachCriticalPermissionSafely(Role $role, Permission $permission): void
     {
         // 1. If the role has no active memberships, it can safely lose the permission.
-        $hasActiveMemberships = $role->memberships()->where('is_active', true)->exists();
+        $hasActiveMemberships = $role->memberships()->where('status', \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE)->exists();
 
         if ($hasActiveMemberships) {
             // 2. Calculate Effective Capacity POST-detach
@@ -95,7 +95,7 @@ class RolePermissionService
         // that contains the permission.
 
         $hasRemainingAdmin = Membership::where('tenant_id', $tenantId)
-            ->where('is_active', true)
+            ->where('status', \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE)
             ->whereHas('roles', function ($query) use ($roleTargeted, $permission) {
                 $query->where('roles.id', '!=', $roleTargeted->id)
                       ->whereHas('permissions', function ($permQuery) use ($permission) {

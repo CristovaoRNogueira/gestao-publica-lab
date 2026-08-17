@@ -47,7 +47,7 @@ class RoleAssignmentService
                     throw new InvalidArgumentException('Target membership não pertence ao tenant ativo.');
                 }
 
-                if (!$targetMembership->is_active) {
+                if ($targetMembership->status !== \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE) {
                     throw new CannotAssignRoleToInactiveMembershipException('Não é possível atribuir papéis a uma associação inativa.');
                 }
 
@@ -112,7 +112,7 @@ class RoleAssignmentService
     private function checkEffectiveCapacity(Membership $targetMembership, int $tenantId): void
     {
         $activeAdminCount = Membership::where('tenant_id', $tenantId)
-            ->where('is_active', true)
+            ->where('status', \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE)
             ->where('id', '!=', $targetMembership->id)
             ->whereHas('roles.permissions', function ($query) {
                 $query->where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
@@ -122,7 +122,7 @@ class RoleAssignmentService
             return;
         }
 
-        if (!$targetMembership->is_active) {
+        if ($targetMembership->status !== \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE) {
             return;
         }
 

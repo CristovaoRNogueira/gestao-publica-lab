@@ -49,7 +49,7 @@ class MembershipManagementTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
-        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $response = $this->actingAs($user)
             ->withSession(['tenant_id' => $tenant->id])
@@ -64,14 +64,14 @@ class MembershipManagementTest extends TestCase
         $tenantB = $this->createActiveTenant('tenant-b');
 
         $userA = User::factory()->create();
-        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userA->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenantA, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
 
         $userB = User::factory()->create();
-        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userB->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userB->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $userC = User::factory()->create();
-        Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $userC->id, 'is_active' => true]);
+        Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $userC->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $response = $this->actingAs($userA)
             ->withSession(['tenant_id' => $tenantA->id])
@@ -92,7 +92,7 @@ class MembershipManagementTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $response = $this->get("/memberships/{$membership->id}/edit");
         $response->assertRedirect('/login');
@@ -102,7 +102,7 @@ class MembershipManagementTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $response = $this->actingAs($user)
             ->withSession(['tenant_id' => $tenant->id])
@@ -117,11 +117,11 @@ class MembershipManagementTest extends TestCase
         $tenantB = $this->createActiveTenant('tenant-b');
 
         $userA = User::factory()->create();
-        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userA->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenantA, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
 
         $userB = User::factory()->create();
-        $membershipB = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userB->id, 'is_active' => true]);
+        $membershipB = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userB->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         Role::create(['tenant_id' => $tenantA->id, 'name' => 'Role A', 'slug' => 'role-a']);
         Role::create(['tenant_id' => $tenantA->id, 'name' => 'Role B', 'slug' => 'role-b']);
@@ -145,11 +145,11 @@ class MembershipManagementTest extends TestCase
         $tenantB = $this->createActiveTenant('tenant-b');
 
         $userA = User::factory()->create();
-        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userA->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenantA, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
 
         $userB = User::factory()->create();
-        $membershipB = Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $userB->id, 'is_active' => true]);
+        $membershipB = Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $userB->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $response = $this->actingAs($userA)
             ->withSession(['tenant_id' => $tenantA->id])
@@ -166,11 +166,11 @@ class MembershipManagementTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $userA = User::factory()->create();
-        $membershipA = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userA->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenant, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
 
         $userB = User::factory()->create();
-        $membershipB = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userB->id, 'is_active' => true]);
+        $membershipB = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userB->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'New Role', 'slug' => 'new-role']);
 
@@ -186,11 +186,11 @@ class MembershipManagementTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $userA = User::factory()->create();
-        $membershipA = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userA->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenant, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
 
         $userB = User::factory()->create();
-        $membershipB = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userB->id, 'is_active' => false]);
+        $membershipB = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userB->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'New Role', 'slug' => 'new-role']);
 
@@ -206,11 +206,11 @@ class MembershipManagementTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $userA = User::factory()->create();
-        $membershipA = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userA->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenant, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
 
         $userB = User::factory()->create();
-        $membershipB = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userB->id, 'is_active' => true]);
+        $membershipB = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userB->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'New Role', 'slug' => 'new-role']);
         $membershipB->roles()->attach($role);
@@ -227,7 +227,7 @@ class MembershipManagementTest extends TestCase
     {
         $tenant = $this->createActiveTenant();
         $userA = User::factory()->create();
-        $membershipA = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userA->id, 'is_active' => true]);
+        $membershipA = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $adminRole = $this->grantPermission($tenant, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
 
         $response = $this->actingAs($userA)

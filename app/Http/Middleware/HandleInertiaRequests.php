@@ -85,7 +85,7 @@ class HandleInertiaRequests extends Middleware
                 'tenant' => $activeTenant,
                 'tenants' => $user
                     ? $user->memberships()
-                        ->where('is_active', true)
+                        ->where('status', \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE)
                         ->whereHas('tenant', fn ($q) => $q->where('is_active', true))
                         ->with('tenant:id,name,slug')
                         ->get()

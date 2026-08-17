@@ -56,7 +56,7 @@ class CreateTenantService
             $membership = Membership::create([
                 'user_id' => $owner->id,
                 'tenant_id' => $tenant->id,
-                'is_active' => true,
+                'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE,
             ]);
 
             $expectedSlugs = PermissionSlug::defaultAdminSlugs();

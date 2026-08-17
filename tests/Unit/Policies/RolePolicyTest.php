@@ -45,7 +45,7 @@ class RolePolicyTest extends TestCase
     {
         $user = User::factory()->create();
         $tenant = Tenant::create(['name' => 'A', 'slug' => 'a']);
-        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id]);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->assertFalse($this->policy->viewAny($user));
 
@@ -80,7 +80,7 @@ class RolePolicyTest extends TestCase
     {
         $user = User::factory()->create();
         $tenant = Tenant::create(['name' => 'A', 'slug' => 'a']);
-        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id]);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->context->set($tenant, $membership);
         $this->assertFalse($this->policy->create($user));

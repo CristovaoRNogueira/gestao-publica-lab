@@ -44,12 +44,12 @@ class MembershipPolicyTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't', 'is_active' => true]);
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->grantPermission($tenant, $membership, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
         $this->context->set($tenant, $membership);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->assertTrue($this->policy->assignRole($user, $targetMembership));
     }
@@ -58,11 +58,11 @@ class MembershipPolicyTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'T', 'slug' => 't', 'is_active' => true]);
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->context->set($tenant, $membership);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->assertFalse($this->policy->assignRole($user, $targetMembership));
     }
@@ -73,12 +73,12 @@ class MembershipPolicyTest extends TestCase
         $tenant2 = Tenant::create(['name' => 'T2', 'slug' => 't2', 'is_active' => true]);
 
         $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant1->id, 'user_id' => $user->id, 'is_active' => true]);
+        $membership = Membership::create(['tenant_id' => $tenant1->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->grantPermission($tenant1, $membership, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
         $this->context->set($tenant1, $membership);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant2->id, 'user_id' => User::factory()->create()->id, 'is_active' => true]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant2->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->assertFalse($this->policy->assignRole($user, $targetMembership));
     }

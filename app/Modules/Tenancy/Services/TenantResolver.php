@@ -15,7 +15,7 @@ class TenantResolver
 
         $membership = Membership::where('tenant_id', $tenantId)
             ->where('user_id', $user->getAuthIdentifier())
-            ->where('is_active', true)
+            ->where('status', Membership::STATUS_ACTIVE)
             ->with(['tenant', 'roles.permissions'])
             ->first();
 

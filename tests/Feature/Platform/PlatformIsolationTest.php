@@ -21,7 +21,7 @@ class PlatformIsolationTest extends TestCase
     {
         $user = User::factory()->create();
         $tenant = Tenant::create(['name' => 'Test Tenant', 'slug' => 'test-tenant', 'is_active' => true]);
-        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create(['name' => 'Tenant Admin', 'slug' => 'tenant-admin', 'tenant_id' => $tenant->id]);
         $permission = Permission::create(['name' => 'Platform Access Fake', 'slug' => 'platform.access']);
@@ -54,7 +54,7 @@ class PlatformIsolationTest extends TestCase
     {
         $user = User::factory()->create();
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
-        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = Role::create(['name' => 'Tenant Role', 'slug' => 'tenant-role', 'tenant_id' => $tenant->id]);
         $membership->roles()->attach($role->id);
@@ -72,7 +72,7 @@ class PlatformIsolationTest extends TestCase
     {
         $user = User::factory()->create();
         $tenant = Tenant::create(['name' => 'T1', 'slug' => 't1', 'is_active' => true]);
-        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'is_active' => true]);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $role = PlatformRole::create(['name' => 'Platform Admin', 'slug' => 'platform-admin']);
         $permission = PlatformPermission::create(['name' => 'Fake Tenant Perm', 'slug' => 'memberships.roles.manage']);

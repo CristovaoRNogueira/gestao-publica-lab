@@ -15,6 +15,7 @@ class TenantInvitation extends Model
         'tenant_id',
         'email',
         'role_id',
+        'organization_unit_id',
         'token_hash',
         'status',
         'invited_by_user_id',
@@ -45,6 +46,11 @@ class TenantInvitation extends Model
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function organizationUnit(): BelongsTo
+    {
+        return $this->belongsTo(OrganizationUnit::class);
     }
 
     public function inviter(): BelongsTo

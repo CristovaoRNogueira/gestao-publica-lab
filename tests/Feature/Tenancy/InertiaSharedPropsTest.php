@@ -33,7 +33,7 @@ class InertiaSharedPropsTest extends TestCase
 
         $membership = $tenant->memberships()->create([
             'user_id' => $user->id,
-            'is_active' => true,
+            'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE,
         ]);
 
         $role = $tenant->roles()->create([
@@ -86,7 +86,7 @@ class InertiaSharedPropsTest extends TestCase
     {
         $user = User::factory()->create();
         $tenant = Tenant::create(['name' => 'Active', 'slug' => 'active']);
-        $user->memberships()->create(['tenant_id' => $tenant->id, 'is_active' => true]);
+        $user->memberships()->create(['tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
         $this->actingAs($user)
             ->withSession([
