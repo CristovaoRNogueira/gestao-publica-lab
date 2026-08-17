@@ -85,6 +85,40 @@ class MembershipPolicy
             && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_MANAGE->value) ?? false);
     }
 
+    public function approve(User $user, Membership $targetMembership): bool
+    {
+        return $this->canDecideOnMembership($user, $targetMembership);
+    }
+
+    public function reject(User $user, Membership $targetMembership): bool
+    {
+        return $this->canDecideOnMembership($user, $targetMembership);
+    }
+
+    private function canDecideOnMembership(User $user, Membership $targetMembership): bool
+    {
+        if ($user->id === $targetMembership->user_id) {
+            return false;
+        }
+
+        if ($targetMembership->status !== Membership::STATUS_PENDING) {
+            return false;
+        }
+
+        if (!$this->belongsToActiveTenant($targetMembership)) {
+            return false;
+        }
+
+        $actorMembership = $this->context->getMembership();
+
+        if (!$actorMembership || !$actorMembership->hasPermission(PermissionSlug::MEMBERSHIPS_MANAGE->value)) {
+            return false;
+        }
+
+        return app(\App\Modules\Tenancy\Services\OrganizationScope::class)
+            ->canManage($actorMembership, $targetMembership->organizationUnit);
+    }
+
     private function belongsToActiveTenant(Membership $membership): bool
     {
         $tenant = $this->context->getTenant();

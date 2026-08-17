@@ -8,10 +8,13 @@ use App\Modules\Tenancy\Models\OrganizationUnit;
 class OrganizationScope
 {
     /**
-     * Verifica se o ator pode operar sobre a OrganizationUnit alvo.
+     * Verifica se o ator pode operar sobre a OrganizationUnit alvo (ou sobre o escopo global se null).
      */
-    public function canManage(Membership $actor, OrganizationUnit $targetUnit): bool
+    public function canManage(Membership $actor, ?OrganizationUnit $targetUnit): bool
     {
+        if ($targetUnit === null) {
+            return $this->hasGlobalScope($actor);
+        }
         if (!$this->belongsToSameTenant($actor, $targetUnit)) {
             return false;
         }

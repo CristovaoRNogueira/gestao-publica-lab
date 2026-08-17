@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { Head, Link, usePage, useForm } from '@inertiajs/react';
 import { AppLayout } from '../../layouts/AppLayout';
 
@@ -27,6 +28,7 @@ interface PageProps {
 export default function Index({ memberships }: PageProps) {
     const { auth } = usePage<any>().props;
     const { patch } = useForm();
+    const [activeTab, setActiveTab] = useState('active');
 
     const handleActivate = (id: number) => {
         if (confirm('Tem certeza que deseja ativar este membro?')) {
@@ -39,6 +41,20 @@ export default function Index({ memberships }: PageProps) {
             patch(`/memberships/${id}/deactivate`);
         }
     };
+
+    const handleApprove = (id: number) => {
+        if (confirm('Tem certeza que deseja aprovar o acesso deste usuário?')) {
+            patch(`/memberships/${id}/approve`);
+        }
+    };
+
+    const handleReject = (id: number) => {
+        if (confirm('Tem certeza que deseja recusar o acesso deste usuário?')) {
+            patch(`/memberships/${id}/reject`);
+        }
+    };
+
+    const filteredMemberships = memberships.filter(m => m.status === activeTab);
 
     return (
         <>
@@ -57,6 +73,34 @@ export default function Index({ memberships }: PageProps) {
                             Convidar pessoa
                         </Link>
                     )}
+                </div>
+
+                <div className="mb-4 border-b border-gray-200 dark:border-gray-700">
+                    <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                        {[
+                            { id: 'active', name: 'Ativos' },
+                            { id: 'pending', name: 'Aguardando aprovação' },
+                            { id: 'inactive', name: 'Inativos' },
+                            { id: 'rejected', name: 'Recusados' },
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`
+                                    whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                                    ${activeTab === tab.id
+                                        ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                                    }
+                                `}
+                            >
+                                {tab.name}
+                                <span className="ml-2 bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-100 py-0.5 px-2 rounded-full text-xs">
+                                    {memberships.filter(m => m.status === tab.id).length}
+                                </span>
+                            </button>
+                        ))}
+                    </nav>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
@@ -82,7 +126,7 @@ export default function Index({ memberships }: PageProps) {
                                 </tr>
                             </thead>
                             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                {memberships.map((membership) => (
+                                {filteredMemberships.map((membership) => (
                                     <tr key={membership.id}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                             {membership.user.name}
@@ -141,6 +185,22 @@ export default function Index({ memberships }: PageProps) {
                                                                 Ativar acesso
                                                             </button>
                                                         )}
+                                                        {membership.status === 'pending' && auth.capabilities?.includes('memberships.manage') && (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => handleApprove(membership.id)}
+                                                                    className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                                                                >
+                                                                    Aprovar
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleReject(membership.id)}
+                                                                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                                                >
+                                                                    Rejeitar
+                                                                </button>
+                                                            </>
+                                                        )}
                                                     </>
                                                 ) : (
                                                     <span className="text-gray-500 italic">Você</span>
@@ -151,7 +211,7 @@ export default function Index({ memberships }: PageProps) {
                                 ))}
                             </tbody>
                         </table>
-                        {memberships.length === 0 && (
+                        {filteredMemberships.length === 0 && (
                             <div className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                                 Nenhum membro encontrado.
                             </div>
