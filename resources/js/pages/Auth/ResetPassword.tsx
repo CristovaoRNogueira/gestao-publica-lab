@@ -1,26 +1,34 @@
 import { Head, useForm } from '@inertiajs/react';
-import { FormEvent } from 'react';
+import { FormEvent, useEffect } from 'react';
 import { translateAuthError } from '@/utils/translations';
 
-export default function Login() {
+export default function ResetPassword({ token, email }: { token: string, email: string }) {
     const { data, setData, post, processing, errors } = useForm({
-        email: '',
+        token: token,
+        email: email,
         password: '',
-        remember: false,
+        password_confirmation: '',
     });
+
+    useEffect(() => {
+        return () => {
+            setData('password', '');
+            setData('password_confirmation', '');
+        };
+    }, []);
 
     function handleSubmit(e: FormEvent) {
         e.preventDefault();
-        post('/login');
+        post('/reset-password');
     }
 
     return (
         <>
-            <Head title="Login" />
+            <Head title="Redefinir Senha" />
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
                 <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-                        Gestão Pública Lab
+                        Criar Nova Senha
                     </h1>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -33,10 +41,9 @@ export default function Login() {
                                 type="email"
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
-                                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-gray-100 dark:bg-gray-600"
                                 required
-                                autoFocus
-                                autoComplete="email"
+                                readOnly
                             />
                             {errors.email && (
                                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">{translateAuthError(errors.email)}</p>
@@ -45,7 +52,7 @@ export default function Login() {
 
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Senha
+                                Nova Senha
                             </label>
                             <input
                                 id="password"
@@ -54,33 +61,36 @@ export default function Login() {
                                 onChange={(e) => setData('password', e.target.value)}
                                 className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                 required
-                                autoComplete="current-password"
+                                autoFocus
                             />
                             {errors.password && (
                                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">{translateAuthError(errors.password)}</p>
                             )}
                         </div>
 
-                        <div className="flex items-center">
-                            <input
-                                id="remember"
-                                type="checkbox"
-                                checked={data.remember}
-                                onChange={(e) => setData('remember', e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <label htmlFor="remember" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                Lembrar-me
+                        <div>
+                            <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Confirmar Nova Senha
                             </label>
+                            <input
+                                id="password_confirmation"
+                                type="password"
+                                value={data.password_confirmation}
+                                onChange={(e) => setData('password_confirmation', e.target.value)}
+                                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                required
+                            />
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="w-full flex justify-center py-2 px-4 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            {processing ? 'Entrando...' : 'Entrar'}
-                        </button>
+                        <div className="pt-2">
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="w-full flex justify-center py-2 px-4 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {processing ? 'Salvando...' : 'Redefinir Senha'}
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
