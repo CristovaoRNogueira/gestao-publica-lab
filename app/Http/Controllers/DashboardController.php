@@ -16,9 +16,20 @@ class DashboardController extends Controller
             ->where('status', \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE)
             ->exists();
 
-        if (! $hasActiveMemberships) {
-            return redirect()->route('tenants.create');
+        if ($hasActiveMemberships) {
+            return Inertia::render('Dashboard');
         }
+
+        $hasPendingMemberships = $request->user()
+            ->memberships()
+            ->where('status', \App\Modules\Tenancy\Models\Membership::STATUS_PENDING)
+            ->exists();
+
+        if ($hasPendingMemberships) {
+            return redirect()->route('pending-approval');
+        }
+
+        return redirect()->route('tenants.create');
 
         return Inertia::render('Dashboard');
     }

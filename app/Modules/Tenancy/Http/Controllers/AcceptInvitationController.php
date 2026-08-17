@@ -26,10 +26,20 @@ class AcceptInvitationController extends Controller
             ]);
         }
 
-        // If guest, store intended URL to return here after login/register
         if (!auth()->check()) {
             session(['url.intended' => url()->current()]);
         }
+
+        // Store invitation context for registration lockdown
+        session([
+            'pending_invitation' => [
+                'email' => strtolower(trim($invitation->email)),
+                'token' => $token,
+            ]
+        ]);
+
+        $isAuthenticated = auth()->check();
+        $userExists = \App\Models\User::whereRaw('LOWER(email) = ?', [strtolower(trim($invitation->email))])->exists();
 
         return Inertia::render('Public/Invites/Accept', [
             'isValid' => true,
@@ -37,6 +47,9 @@ class AcceptInvitationController extends Controller
             'tenantName' => $invitation->tenant->name,
             'inviterName' => $invitation->inviter->name,
             'expiresAt' => $invitation->expires_at->toIso8601String(),
+            'inviteEmail' => $invitation->email,
+            'isAuthenticated' => $isAuthenticated,
+            'userExists' => $userExists,
         ]);
     }
 
@@ -45,10 +58,12 @@ class AcceptInvitationController extends Controller
         try {
             $invitation = $service->execute($token, $request->user());
 
-            // Set the tenant in session so they go straight there
-            session(['tenant_id' => $invitation->tenant_id]);
+            // Remove context from session
+            session()->forget('pending_invitation');
 
-            return redirect()->route('dashboard')->with('success', 'Convite aceito com sucesso.');
+            // Explicitly do NOT set tenant_id, so they remain without TenantContext until approved.
+
+            return redirect()->route('pending-approval')->with('success', 'Convite aceito com sucesso. Aguardando aprovação.');
         } catch (\Exception $e) {
             $status = $e->getCode() ?: 400;
             if ($status < 400 || $status >= 600) {

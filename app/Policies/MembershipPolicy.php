@@ -25,6 +25,10 @@ class MembershipPolicy
             return false;
         }
 
+        if (in_array($targetMembership->status, [Membership::STATUS_PENDING, Membership::STATUS_REJECTED])) {
+            return false;
+        }
+
         return $this->belongsToActiveTenant($targetMembership)
             && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false);
     }
@@ -32,6 +36,10 @@ class MembershipPolicy
     public function assignRole(User $user, Membership $targetMembership): bool
     {
         if ($user->id === $targetMembership->user_id) {
+            return false;
+        }
+
+        if (in_array($targetMembership->status, [Membership::STATUS_PENDING, Membership::STATUS_REJECTED])) {
             return false;
         }
 
@@ -45,12 +53,20 @@ class MembershipPolicy
             return false;
         }
 
+        if (in_array($targetMembership->status, [Membership::STATUS_PENDING, Membership::STATUS_REJECTED])) {
+            return false;
+        }
+
         return $this->belongsToActiveTenant($targetMembership)
             && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value) ?? false);
     }
 
     public function activate(User $user, Membership $targetMembership): bool
     {
+        if (in_array($targetMembership->status, [Membership::STATUS_PENDING, Membership::STATUS_REJECTED])) {
+            return false;
+        }
+
         return $this->belongsToActiveTenant($targetMembership)
             && ($this->context->getMembership()?->hasPermission(PermissionSlug::MEMBERSHIPS_MANAGE->value) ?? false);
     }
@@ -58,6 +74,10 @@ class MembershipPolicy
     public function deactivate(User $user, Membership $targetMembership): bool
     {
         if ($user->id === $targetMembership->user_id) {
+            return false;
+        }
+
+        if (in_array($targetMembership->status, [Membership::STATUS_PENDING, Membership::STATUS_REJECTED])) {
             return false;
         }
 

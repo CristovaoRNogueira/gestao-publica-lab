@@ -188,7 +188,7 @@ class TenantInvitationTest extends TestCase
         );
     }
 
-    public function test_public_guest_can_view_valid_invitation()
+    public function test_public_guest_can_view_valid_invitation_for_new_user()
     {
         $token = Str::random(32);
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't8', 'is_active' => true]);
@@ -196,6 +196,7 @@ class TenantInvitationTest extends TestCase
             'tenant_id' => $tenant->id,
             'token_hash' => hash('sha256', $token),
             'status' => 'pending',
+            'email' => 'new-guest@example.com',
         ]);
 
         $this->get("/invites/{$token}")
@@ -204,6 +205,31 @@ class TenantInvitationTest extends TestCase
                 ->component('Public/Invites/Accept')
                 ->where('isValid', true)
                 ->where('tenantName', $invitation->tenant->name)
+                ->where('isAuthenticated', false)
+                ->where('userExists', false)
+            );
+    }
+
+    public function test_public_guest_can_view_valid_invitation_for_existing_user()
+    {
+        User::factory()->create(['email' => 'existing-guest@example.com']);
+        $token = Str::random(32);
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't8b', 'is_active' => true]);
+        $invitation = TenantInvitation::factory()->create([
+            'tenant_id' => $tenant->id,
+            'token_hash' => hash('sha256', $token),
+            'status' => 'pending',
+            'email' => 'existing-guest@example.com',
+        ]);
+
+        $this->get("/invites/{$token}")
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Public/Invites/Accept')
+                ->where('isValid', true)
+                ->where('tenantName', $invitation->tenant->name)
+                ->where('isAuthenticated', false)
+                ->where('userExists', true)
             );
     }
 
@@ -281,7 +307,7 @@ class TenantInvitationTest extends TestCase
         ]);
 
         $this->actingAs($user);
-        $this->post("/invites/{$token}")->assertRedirect('/dashboard');
+        $this->post("/invites/{$token}")->assertRedirect('/pending-approval');
 
         $invitation->refresh();
         $this->assertEquals('accepted', $invitation->status);
@@ -334,7 +360,7 @@ class TenantInvitationTest extends TestCase
         ]);
 
         $this->actingAs($user);
-        $this->post("/invites/{$token}")->assertRedirect('/dashboard');
+        $this->post("/invites/{$token}")->assertRedirect('/pending-approval');
 
         $invitation->refresh();
         $this->assertEquals('accepted', $invitation->status);
@@ -342,5 +368,176 @@ class TenantInvitationTest extends TestCase
         $membership->refresh();
         $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_PENDING, $membership->status);
         $this->assertTrue($membership->roles->contains($invitation->role_id));
+    }
+    public function test_new_user_starts_registration_via_invitation()
+    {
+        $token = Str::random(32);
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't15', 'is_active' => true]);
+        $invitation = TenantInvitation::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => 'newuser@example.com',
+            'token_hash' => hash('sha256', $token),
+            'status' => 'pending',
+        ]);
+
+        $response = $this->get("/invites/{$token}");
+        $response->assertSessionHas('pending_invitation.email', 'newuser@example.com');
+        $response->assertSessionHas('url.intended');
+
+        $registerResponse = $this->get('/register');
+        $registerResponse->assertInertia(fn ($page) => $page->where('inviteEmail', 'newuser@example.com'));
+    }
+
+    public function test_registration_with_different_email_is_rejected_if_invitation_pending()
+    {
+        session(['pending_invitation' => ['email' => 'newuser@example.com', 'token' => 'abc']]);
+
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'hacker@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        $response->assertSessionHasErrors(['email']);
+        $this->assertDatabaseMissing('users', ['email' => 'hacker@example.com']);
+    }
+
+    public function test_registration_returns_to_invitation_original_url()
+    {
+        session([
+            'pending_invitation' => ['email' => 'newuser@example.com', 'token' => 'abc'],
+            'url.intended' => 'http://localhost/invites/abc'
+        ]);
+
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'newuser@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        $response->assertRedirect('http://localhost/invites/abc');
+        $this->assertDatabaseHas('users', ['email' => 'newuser@example.com']);
+    }
+
+    public function test_used_invitation_is_rejected()
+    {
+        $user = User::factory()->create(['email' => 'user@example.com']);
+        $token = Str::random(32);
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't16', 'is_active' => true]);
+        TenantInvitation::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => 'user@example.com',
+            'token_hash' => hash('sha256', $token),
+            'status' => 'accepted',
+        ]);
+
+        $this->actingAs($user);
+        $this->post("/invites/{$token}")->assertStatus(400); // Exception status if handled, or 500 depending on handler
+    }
+
+    public function test_user_with_rejected_membership_reactivates_and_accepts()
+    {
+        $user = User::factory()->create(['email' => 'user@example.com']);
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't17', 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
+        $membership = Membership::create(['user_id' => $user->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_REJECTED]);
+
+        $token = Str::random(32);
+        $invitation = TenantInvitation::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => 'user@example.com',
+            'token_hash' => hash('sha256', $token),
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($user);
+        $this->post("/invites/{$token}")->assertRedirect('/pending-approval');
+
+        $membership->refresh();
+        $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_PENDING, $membership->status);
+    }
+
+    public function test_tenant_admin_cannot_invite_to_organization_unit_outside_scope()
+    {
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't18', 'is_active' => true]);
+        $role = Role::create(['name' => 'Test', 'slug' => 'test-role18', 'tenant_id' => $tenant->id]);
+
+        $unitA = \App\Modules\Tenancy\Models\OrganizationUnit::create(['tenant_id' => $tenant->id, 'name' => 'A', 'slug' => 'a', 'type' => 'secretaria']);
+        $unitB = \App\Modules\Tenancy\Models\OrganizationUnit::create(['tenant_id' => $tenant->id, 'name' => 'B', 'slug' => 'b', 'type' => 'secretaria']);
+
+        // Admin belongs to unitA, does not have global scope
+        $admin = User::factory()->create();
+        $membership = Membership::create(['user_id' => $admin->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE, 'organization_unit_id' => $unitA->id]);
+        $permissions = \App\Modules\Tenancy\Models\Permission::whereIn('slug', [
+            PermissionSlug::INVITATIONS_VIEW->value,
+            PermissionSlug::INVITATIONS_MANAGE->value,
+        ])->pluck('id');
+        $role->permissions()->sync($permissions);
+        $membership->roles()->sync([$role->id]);
+
+        $this->actingAs($admin);
+        session(['tenant_id' => $tenant->id]);
+
+        // Attempting to invite to Unit B should fail validation
+        $this->post('/invitations', [
+            'email' => 'test@example.com',
+            'role_id' => $role->id,
+            'organization_unit_id' => $unitB->id
+        ])->assertSessionHasErrors(['organization_unit_id']);
+    }
+
+    public function test_tenant_admin_can_invite_to_descendant_organization_unit()
+    {
+        Notification::fake();
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't19', 'is_active' => true]);
+        $role = Role::create(['name' => 'Test', 'slug' => 'test-role19', 'tenant_id' => $tenant->id]);
+
+        $unitA = \App\Modules\Tenancy\Models\OrganizationUnit::create(['tenant_id' => $tenant->id, 'name' => 'A', 'slug' => 'a', 'type' => 'secretaria']);
+        $unitA1 = \App\Modules\Tenancy\Models\OrganizationUnit::create(['tenant_id' => $tenant->id, 'name' => 'A1', 'slug' => 'a1', 'parent_id' => $unitA->id, 'type' => 'departamento']);
+
+        // Admin belongs to unitA
+        $admin = User::factory()->create();
+        $membership = Membership::create(['user_id' => $admin->id, 'tenant_id' => $tenant->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE, 'organization_unit_id' => $unitA->id]);
+        $permissions = \App\Modules\Tenancy\Models\Permission::whereIn('slug', [
+            PermissionSlug::INVITATIONS_VIEW->value,
+            PermissionSlug::INVITATIONS_MANAGE->value,
+        ])->pluck('id');
+        $role->permissions()->sync($permissions);
+        $membership->roles()->sync([$role->id]);
+
+        $this->actingAs($admin);
+        session(['tenant_id' => $tenant->id]);
+
+        // Attempting to invite to Unit A1 should succeed
+        $this->post('/invitations', [
+            'email' => 'test@example.com',
+            'role_id' => $role->id,
+            'organization_unit_id' => $unitA1->id
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('tenant_invitations', [
+            'email' => 'test@example.com',
+            'organization_unit_id' => $unitA1->id
+        ]);
+    }
+
+    public function test_forged_organization_unit_id_from_other_tenant_is_rejected()
+    {
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't20', 'is_active' => true]);
+        $otherTenant = Tenant::create(['name' => 'Test', 'slug' => 't21', 'is_active' => true]);
+        $role = Role::create(['name' => 'Test', 'slug' => 'test-role20', 'tenant_id' => $tenant->id]);
+        $foreignUnit = \App\Modules\Tenancy\Models\OrganizationUnit::create(['tenant_id' => $otherTenant->id, 'name' => 'Foreign', 'slug' => 'f', 'type' => 'secretaria']);
+
+        $admin = $this->createAdmin($tenant);
+
+        $this->actingAs($admin);
+        session(['tenant_id' => $tenant->id]);
+
+        $this->post('/invitations', [
+            'email' => 'test@example.com',
+            'role_id' => $role->id,
+            'organization_unit_id' => $foreignUnit->id
+        ])->assertSessionHasErrors(['organization_unit_id']);
     }
 }

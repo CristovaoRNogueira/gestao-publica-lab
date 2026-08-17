@@ -120,9 +120,11 @@ export default function Index({ memberships }: PageProps) {
                                             <div className="flex justify-end space-x-3">
                                                 {membership.user.id !== auth.user.id ? (
                                                     <>
-                                                        <Link href={`/memberships/${membership.id}/edit`} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                                            Gerenciar funções
-                                                        </Link>
+                                                        {membership.status !== 'pending' && membership.status !== 'rejected' && (
+                                                            <Link href={`/memberships/${membership.id}/edit`} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                                                Gerenciar funções
+                                                            </Link>
+                                                        )}
                                                         {membership.status === 'active' && (
                                                             <button
                                                                 onClick={() => handleDeactivate(membership.id)}
