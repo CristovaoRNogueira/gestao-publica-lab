@@ -70,6 +70,12 @@ Route::middleware('auth')->group(function () {
         Route::patch('memberships/{membership}/deactivate', [\App\Modules\Tenancy\Http\Controllers\MembershipController::class, 'deactivate'])
             ->name('memberships.deactivate');
 
+        Route::patch('memberships/{membership}/approve', [\App\Modules\Tenancy\Http\Controllers\MembershipController::class, 'approve'])
+            ->name('memberships.approve');
+
+        Route::patch('memberships/{membership}/reject', [\App\Modules\Tenancy\Http\Controllers\MembershipController::class, 'reject'])
+            ->name('memberships.reject');
+
         Route::post('memberships/{membership}/roles', [\App\Modules\Tenancy\Http\Controllers\MembershipRoleController::class, 'store'])
             ->name('memberships.roles.store');
 

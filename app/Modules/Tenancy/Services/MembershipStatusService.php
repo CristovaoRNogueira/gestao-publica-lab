@@ -60,4 +60,34 @@ class MembershipStatusService
             throw new CannotRemoveLastAdminException('Não é possível desativar a última capacidade administrativa do tenant.');
         }
     }
+
+    public function approve(Membership $membership): Membership
+    {
+        return DB::transaction(function () use ($membership) {
+            $membership = Membership::lockForUpdate()->findOrFail($membership->id);
+
+            if ($membership->status !== Membership::STATUS_PENDING) {
+                abort(409, 'Apenas solicitações pendentes podem ser aprovadas.');
+            }
+
+            $membership->update(['status' => Membership::STATUS_ACTIVE]);
+
+            return $membership;
+        });
+    }
+
+    public function reject(Membership $membership): Membership
+    {
+        return DB::transaction(function () use ($membership) {
+            $membership = Membership::lockForUpdate()->findOrFail($membership->id);
+
+            if ($membership->status !== Membership::STATUS_PENDING) {
+                abort(409, 'Apenas solicitações pendentes podem ser recusadas.');
+            }
+
+            $membership->update(['status' => Membership::STATUS_REJECTED]);
+
+            return $membership;
+        });
+    }
 }

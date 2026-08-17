@@ -82,4 +82,22 @@ class MembershipController extends Controller
 
         return back()->with('flash', ['success' => 'Membro desativado com sucesso.']);
     }
+
+    public function approve(Membership $membership): RedirectResponse
+    {
+        Gate::authorize('approve', [Membership::class, $membership]);
+
+        $this->statusService->approve($membership);
+
+        return back()->with('flash', ['success' => 'Acesso aprovado com sucesso.']);
+    }
+
+    public function reject(Membership $membership): RedirectResponse
+    {
+        Gate::authorize('reject', [Membership::class, $membership]);
+
+        $this->statusService->reject($membership);
+
+        return back()->with('flash', ['success' => 'Solicitação de acesso recusada.']);
+    }
 }
