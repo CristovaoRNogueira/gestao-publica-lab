@@ -41,9 +41,11 @@ class InvitationController extends Controller
 
         $tenantId = app(\App\Modules\Tenancy\Context\TenantContext::class)->getTenant()->id;
         $roles = Role::where('tenant_id', $tenantId)->orderBy('name')->get();
+        $units = \App\Modules\Tenancy\Models\OrganizationUnit::where('tenant_id', $tenantId)->orderBy('name')->get();
 
         return Inertia::render('Invitation/Create', [
-            'roles' => $roles
+            'roles' => $roles,
+            'units' => $units,
         ]);
     }
 
@@ -58,13 +60,19 @@ class InvitationController extends Controller
                 'integer',
                 Rule::exists('roles', 'id')->where('tenant_id', app(\App\Modules\Tenancy\Context\TenantContext::class)->getTenant()->id),
             ],
+            'organization_unit_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('organization_units', 'id')->where('tenant_id', app(\App\Modules\Tenancy\Context\TenantContext::class)->getTenant()->id),
+            ],
         ]);
 
         $service->execute(
             $validated['email'],
             $validated['role_id'],
             app(\App\Modules\Tenancy\Context\TenantContext::class)->getTenant()->id,
-            $request->user()
+            $request->user(),
+            $validated['organization_unit_id'] ?? null
         );
 
         return redirect('/invitations')->with('success', 'Convite enviado com sucesso.');

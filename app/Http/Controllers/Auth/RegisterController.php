@@ -17,9 +17,13 @@ class RegisterController extends Controller
     /**
      * Display the registration view.
      */
-    public function showRegistrationForm(): Response
+    public function showRegistrationForm(Request $request): Response
     {
-        return Inertia::render('Auth/Register');
+        $inviteEmail = $request->session()->get('pending_invitation.email');
+
+        return Inertia::render('Auth/Register', [
+            'inviteEmail' => $inviteEmail
+        ]);
     }
 
     /**
@@ -27,10 +31,20 @@ class RegisterController extends Controller
      */
     public function register(Request $request): RedirectResponse
     {
-        $request->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Password::defaults()],
+        ];
+
+        // Se houver um convite pendente na sessão, garantir que o e-mail cadastrado seja exatamente o mesmo
+        $pendingInvitationEmail = $request->session()->get('pending_invitation.email');
+        if ($pendingInvitationEmail) {
+            $rules['email'][] = \Illuminate\Validation\Rule::in([$pendingInvitationEmail]);
+        }
+
+        $request->validate($rules, [
+            'email.in' => 'O e-mail informado não corresponde ao e-mail do convite.'
         ]);
 
         $user = User::create([

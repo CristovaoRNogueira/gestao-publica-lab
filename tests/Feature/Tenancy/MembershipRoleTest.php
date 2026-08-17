@@ -68,7 +68,7 @@ class MembershipRoleTest extends TestCase
         $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenant, $actorMembership, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => false]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Test', 'slug' => 'test']);
 
         $response = $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
@@ -85,7 +85,7 @@ class MembershipRoleTest extends TestCase
         $actorMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenant, $actorMembership, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
 
-        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'is_active' => false]);
+        $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Test', 'slug' => 'test']);
         $targetMembership->roles()->attach($role->id);
 

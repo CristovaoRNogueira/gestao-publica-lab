@@ -276,4 +276,58 @@ class TenantMembershipGovernanceTest extends TestCase
 
         $this->get('/roles')->assertStatus(200);
     }
+    public function test_pending_membership_cannot_manage_roles()
+    {
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't13', 'is_active' => true]);
+        $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
+        $target = $this->createTenantUserWithPermissions($tenant, []);
+        $targetMembership = Membership::where('user_id', $target->id)->first();
+        $targetMembership->update(['status' => \App\Modules\Tenancy\Models\Membership::STATUS_PENDING]);
+
+        $this->actingAs($admin);
+        session(['tenant_id' => $tenant->id]);
+
+        $this->get("/memberships/{$targetMembership->id}/edit")->assertForbidden();
+    }
+
+    public function test_rejected_membership_cannot_manage_roles()
+    {
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't14', 'is_active' => true]);
+        $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
+        $target = $this->createTenantUserWithPermissions($tenant, []);
+        $targetMembership = Membership::where('user_id', $target->id)->first();
+        $targetMembership->update(['status' => \App\Modules\Tenancy\Models\Membership::STATUS_REJECTED]);
+
+        $this->actingAs($admin);
+        session(['tenant_id' => $tenant->id]);
+
+        $this->get("/memberships/{$targetMembership->id}/edit")->assertForbidden();
+    }
+
+    public function test_pending_membership_cannot_be_activated_via_endpoint_antigo()
+    {
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't15', 'is_active' => true]);
+        $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_MANAGE->value]);
+        $target = $this->createTenantUserWithPermissions($tenant, []);
+        $targetMembership = Membership::where('user_id', $target->id)->first();
+        $targetMembership->update(['status' => \App\Modules\Tenancy\Models\Membership::STATUS_PENDING]);
+
+        $this->actingAs($admin);
+        session(['tenant_id' => $tenant->id]);
+
+        $this->patch("/memberships/{$targetMembership->id}/activate")->assertForbidden();
+    }
+
+    public function test_active_membership_continua_funcionando()
+    {
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't16', 'is_active' => true]);
+        $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
+        $target = $this->createTenantUserWithPermissions($tenant, []);
+        $targetMembership = Membership::where('user_id', $target->id)->first();
+
+        $this->actingAs($admin);
+        session(['tenant_id' => $tenant->id]);
+
+        $this->get("/memberships/{$targetMembership->id}/edit")->assertOk();
+    }
 }

@@ -7,14 +7,21 @@ interface Role {
     name: string;
 }
 
-interface PageProps {
-    roles: Role[];
+interface Unit {
+    id: number;
+    name: string;
 }
 
-export default function Create({ roles }: PageProps) {
+interface PageProps {
+    roles: Role[];
+    units: Unit[];
+}
+
+export default function Create({ roles, units }: PageProps) {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
-        role_id: ''
+        role_id: '',
+        organization_unit_id: ''
     });
 
     const handleSubmit = (e: FormEvent) => {
@@ -24,6 +31,7 @@ export default function Create({ roles }: PageProps) {
                 // Limpar formulário ou redirecionar. O controller atual retorna back()
                 setData('email', '');
                 setData('role_id', '');
+                setData('organization_unit_id', '');
             }
         });
     };
@@ -85,6 +93,28 @@ export default function Create({ roles }: PageProps) {
                                             </select>
                                         </div>
                                         {errors.role_id && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.role_id}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="organization_unit_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Unidade Organizacional
+                                        </label>
+                                        <div className="mt-1">
+                                            <select
+                                                id="organization_unit_id"
+                                                value={data.organization_unit_id}
+                                                onChange={e => setData('organization_unit_id', e.target.value)}
+                                                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                            >
+                                                <option value="">Selecione uma unidade (Opcional)</option>
+                                                {units.map((unit) => (
+                                                    <option key={unit.id} value={unit.id}>
+                                                        {unit.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        {errors.organization_unit_id && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.organization_unit_id}</p>}
                                     </div>
                                 </div>
                                 <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 text-right sm:px-6">

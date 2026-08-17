@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/pending-approval', \App\Http\Controllers\PendingApprovalController::class)->name('pending-approval');
     Route::get('onboarding', [TenantController::class, 'create'])->name('tenants.create');
     Route::post('/tenant/select', [TenantController::class, 'select'])->name('tenant.select');
     Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');

@@ -13,7 +13,11 @@ use App\Modules\Tenancy\Enums\PermissionSlug;
 
 class CreateInvitationService
 {
-    public function execute(string $email, int $roleId, int $tenantId, User $inviter): TenantInvitation
+    public function __construct(
+        protected \App\Modules\Tenancy\Services\OrganizationScope $organizationScope
+    ) {}
+
+    public function execute(string $email, int $roleId, int $tenantId, User $inviter, ?int $organizationUnitId = null): TenantInvitation
     {
         $normalizedEmail = strtolower(trim($email));
 
@@ -22,11 +26,30 @@ class CreateInvitationService
 
         // Prevent Privilege Escalation
         $requiresAdmin = $role->permissions->contains('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
+        $inviterMembership = $inviter->memberships()->where('tenant_id', $tenantId)->where('status', \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE)->first();
+
+        if (!$inviterMembership) {
+            throw ValidationException::withMessages(['email' => 'O usuário atual não possui acesso ativo neste Tenant.']);
+        }
+
         if ($requiresAdmin) {
-            $inviterMembership = $inviter->memberships()->where('tenant_id', $tenantId)->where('status', \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE)->first();
-            if (!$inviterMembership || !$inviterMembership->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value)) {
+            if (!$inviterMembership->hasPermission(PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value)) {
                 throw ValidationException::withMessages(['role_id' => 'Você não tem permissão para convidar administradores.']);
             }
+        }
+
+        // Validate Organization Scope
+        if ($organizationUnitId) {
+            $targetUnit = \App\Modules\Tenancy\Models\OrganizationUnit::where('id', $organizationUnitId)
+                ->where('tenant_id', $tenantId)
+                ->firstOrFail();
+
+            if (!$this->organizationScope->canManage($inviterMembership, $targetUnit)) {
+                throw ValidationException::withMessages(['organization_unit_id' => 'Você não tem permissão para convidar para esta Unidade Organizacional.']);
+            }
+        } else if (!$this->organizationScope->hasGlobalScope($inviterMembership)) {
+            // Cannot invite globally if they don't have global scope
+            throw ValidationException::withMessages(['organization_unit_id' => 'Você deve selecionar uma Unidade Organizacional subordinada a você.']);
         }
 
         // Check if user is already a member (case-insensitive)
@@ -52,6 +75,7 @@ class CreateInvitationService
             'tenant_id' => $tenantId,
             'email' => $normalizedEmail,
             'role_id' => $role->id,
+            'organization_unit_id' => $organizationUnitId,
             'token_hash' => $tokenHash,
             'status' => 'pending',
             'invited_by_user_id' => $inviter->id,

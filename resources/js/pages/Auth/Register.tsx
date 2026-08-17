@@ -2,10 +2,14 @@ import { Head, useForm, Link } from '@inertiajs/react';
 import { FormEvent } from 'react';
 import { translateAuthError } from '@/utils/translations';
 
-export default function Register() {
+interface Props {
+    inviteEmail?: string;
+}
+
+export default function Register({ inviteEmail }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
-        email: '',
+        email: inviteEmail || '',
         password: '',
         password_confirmation: '',
     });
@@ -52,11 +56,21 @@ export default function Register() {
                                 type="email"
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
-                                className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                className={`mt-1 block w-full rounded-md border shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm ${
+                                    inviteEmail
+                                    ? 'bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600'
+                                    : 'bg-white text-gray-900 border-gray-300 dark:bg-gray-700 dark:text-white dark:border-gray-600'
+                                }`}
                                 required
+                                readOnly={!!inviteEmail}
                             />
                             {errors.email && (
                                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">{translateAuthError(errors.email)}</p>
+                            )}
+                            {inviteEmail && (
+                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                    Seu e-mail foi preenchido automaticamente pelo convite e não pode ser alterado.
+                                </p>
                             )}
                         </div>
 

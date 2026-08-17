@@ -188,7 +188,7 @@ class TenantCreationTest extends TestCase
         Membership::create([
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,
-            'is_active' => false,
+            'status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE,
         ]);
 
         $response = $this->actingAs($user)->get('/dashboard');
