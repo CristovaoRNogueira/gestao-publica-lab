@@ -181,9 +181,9 @@ class TenantMembershipGovernanceTest extends TestCase
         // To deactivate someone else, we need another admin. But we want to deactivate the last admin.
         // So admin1 tries to deactivate admin2, but admin2 is the only one with MEMBERSHIPS_ROLES_MANAGE?
         // No, if admin1 has it, then admin1 is ALSO an admin.
-        // Let's create an external agent or another admin who tries to deactivate the last admin.
         $admin2 = $this->createTenantUserWithPermissions($tenant, [
-            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::MEMBERSHIPS_MANAGE->value
         ]);
 
         $admin1Membership = Membership::where('user_id', $admin1->id)->first();
@@ -196,12 +196,11 @@ class TenantMembershipGovernanceTest extends TestCase
 
         $admin2Membership = Membership::where('user_id', $admin2->id)->first();
 
-        $response = $this->patch("/memberships/{$admin2Membership->id}/deactivate");
-        // Wait, exceptions should be checked.
-        $response->assertStatus(409); // Now expects the HTTP 409 conflict pattern
-
-        $admin2Membership->refresh();
-        $this->assertEquals(\App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE, $admin2Membership->status);
+        // The HTTP layer now correctly blocks this via MembershipPolicy (403) because no one else
+        // has the authority to deactivate the last admin. To test the domain protection,
+        // we call the service directly.
+        $this->expectException(\App\Modules\Tenancy\Exceptions\CannotRemoveLastAdminException::class);
+        app(\App\Modules\Tenancy\Services\MembershipStatusService::class)->deactivate($admin2Membership);
     }
 
     public function test_inactive_membership_receives_403_on_tenant_route()
@@ -265,7 +264,10 @@ class TenantMembershipGovernanceTest extends TestCase
         session(['tenant_id' => $tenant->id]);
         $this->get('/roles')->assertForbidden();
 
-        $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_MANAGE->value]);
+        $admin = $this->createTenantUserWithPermissions($tenant, [
+            PermissionSlug::MEMBERSHIPS_MANAGE->value,
+            PermissionSlug::ROLES_VIEW->value
+        ]);
         $this->actingAs($admin);
         session(['tenant_id' => $tenant->id]);
 
@@ -329,5 +331,57 @@ class TenantMembershipGovernanceTest extends TestCase
         session(['tenant_id' => $tenant->id]);
 
         $this->get("/memberships/{$targetMembership->id}/edit")->assertOk();
+    }
+
+    public function test_local_admin_cannot_deactivate_superior_admin()
+    {
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't17', 'is_active' => true]);
+        $subAdmin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_MANAGE->value]);
+        $superiorAdmin = $this->createTenantUserWithPermissions($tenant, [
+            PermissionSlug::MEMBERSHIPS_MANAGE->value,
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value
+        ]);
+        $superiorMembership = Membership::where('user_id', $superiorAdmin->id)->first();
+
+        $this->actingAs($subAdmin);
+        session(['tenant_id' => $tenant->id]);
+
+        $this->patch("/memberships/{$superiorMembership->id}/deactivate")->assertForbidden();
+    }
+
+    public function test_local_admin_cannot_activate_superior_admin()
+    {
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't18', 'is_active' => true]);
+        $subAdmin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_MANAGE->value]);
+        $superiorAdmin = $this->createTenantUserWithPermissions($tenant, [
+            PermissionSlug::MEMBERSHIPS_MANAGE->value,
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value
+        ]);
+        $superiorMembership = Membership::where('user_id', $superiorAdmin->id)->first();
+        $superiorMembership->update(['status' => Membership::STATUS_INACTIVE]);
+
+        $this->actingAs($subAdmin);
+        session(['tenant_id' => $tenant->id]);
+
+        $this->patch("/memberships/{$superiorMembership->id}/activate")->assertForbidden();
+    }
+
+    public function test_local_admin_cannot_manage_roles_of_superior_admin()
+    {
+        $tenant = Tenant::create(['name' => 'Test', 'slug' => 't19', 'is_active' => true]);
+        // To manage roles, actor needs MEMBERSHIPS_ROLES_MANAGE
+        $subAdmin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
+
+        // Superior admin has more permissions than sub admin
+        $superiorAdmin = $this->createTenantUserWithPermissions($tenant, [
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::ROLES_VIEW->value
+        ]);
+        $superiorMembership = Membership::where('user_id', $superiorAdmin->id)->first();
+
+        $this->actingAs($subAdmin);
+        session(['tenant_id' => $tenant->id]);
+
+        $this->get("/memberships/{$superiorMembership->id}/edit")->assertForbidden();
     }
 }

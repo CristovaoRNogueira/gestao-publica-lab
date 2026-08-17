@@ -5,8 +5,14 @@ export const translateAuthError = (error?: string): string => {
     if (lowerError.includes("we can't find a user") || lowerError.includes("passwords.user")) {
         return 'Não encontramos um usuário com este endereço de e-mail.';
     }
-    if (lowerError.includes('token is invalid') || lowerError.includes('passwords.token')) {
-        return 'Este token de redefinição de senha é inválido.';
+    if (lowerError.includes('token is invalid') || lowerError.includes('passwords.token') || lowerError.includes('token inválido')) {
+        return 'Este link não é mais válido.';
+    }
+    if (lowerError.includes('token has expired') || lowerError.includes('expired')) {
+        return 'Este link expirou. Solicite um novo link para continuar.';
+    }
+    if (lowerError.includes('token already used') || lowerError.includes('já utilizado')) {
+        return 'Este link já foi utilizado.';
     }
     if (lowerError.includes('already been taken')) {
         return 'Este e-mail já está em uso.';

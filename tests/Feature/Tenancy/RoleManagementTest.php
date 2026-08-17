@@ -290,4 +290,39 @@ class RoleManagementTest extends TestCase
         $this->get("/roles/{$role->id}")->assertForbidden();
         $this->get("/roles/{$role->id}/edit")->assertForbidden();
     }
+
+    public function test_lower_authority_cannot_edit_superior_role()
+    {
+        [$user, $tenant, $role] = $this->createMemberWithPermissions([PermissionSlug::ROLES_UPDATE->value]);
+
+        $superiorRole = Role::create(['tenant_id' => $tenant->id, 'name' => 'Superior', 'slug' => 'superior']);
+        $superiorPermission = \App\Modules\Tenancy\Models\Permission::where('slug', PermissionSlug::MEMBERSHIPS_MANAGE->value)->first();
+        $superiorRole->permissions()->attach($superiorPermission->id);
+
+        $response = $this->put("/roles/{$superiorRole->id}", [
+            'name' => 'New Name',
+            'slug' => 'new-slug',
+        ]);
+        $response->assertForbidden();
+    }
+
+    public function test_authorized_admin_can_edit_subordinate_role()
+    {
+        [$user, $tenant, $role] = $this->createMemberWithPermissions([
+            PermissionSlug::ROLES_UPDATE->value,
+            PermissionSlug::MEMBERSHIPS_MANAGE->value
+        ]);
+
+        $subordinateRole = Role::create(['tenant_id' => $tenant->id, 'name' => 'Subordinate', 'slug' => 'subordinate']);
+        // Subordinate role has MEMBERSHIPS_MANAGE, which the actor also has.
+        $subordinatePermission = \App\Modules\Tenancy\Models\Permission::where('slug', PermissionSlug::MEMBERSHIPS_MANAGE->value)->first();
+        $subordinateRole->permissions()->attach($subordinatePermission->id);
+
+        $response = $this->put("/roles/{$subordinateRole->id}", [
+            'name' => 'New Name',
+            'description' => 'Desc'
+        ]);
+        $response->assertRedirect();
+        $this->assertDatabaseHas('roles', ['id' => $subordinateRole->id, 'name' => 'New Name']);
+    }
 }

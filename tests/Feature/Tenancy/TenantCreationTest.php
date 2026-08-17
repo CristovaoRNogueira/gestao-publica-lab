@@ -193,7 +193,7 @@ class TenantCreationTest extends TestCase
 
         $response = $this->actingAs($user)->get('/dashboard');
 
-        $response->assertRedirect('/onboarding');
+        $response->assertRedirect('/access-denied');
     }
 
     public function test_authenticated_user_with_membership_accesses_dashboard_normally()

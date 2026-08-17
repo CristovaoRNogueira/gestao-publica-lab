@@ -8,7 +8,7 @@ class CannotRemoveLastEffectivePermissionException extends RuntimeException
 {
     public function __construct(string $permissionName = 'crítica', int $code = 0, ?\Throwable $previous = null)
     {
-        $message = "Não é possível remover a permissão {$permissionName} deste papel, pois isso deixaria o tenant sem administradores capazes de realizar esta função.";
+        $message = "Não é possível remover a permissão {$permissionName} desta função, pois isso deixaria a organização sem administradores capazes de realizar esta ação.";
         parent::__construct($message, $code, $previous);
     }
 }

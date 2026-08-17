@@ -34,8 +34,27 @@ class MembershipController extends Controller
             ->where('tenant_id', $tenant->id)
             ->get();
 
+        $actorMembership = $this->tenantContext->getMembership();
+        $scopeService = app(\App\Modules\Tenancy\Services\OrganizationScope::class);
+
+        $availableUnits = \App\Modules\Tenancy\Models\OrganizationUnit::where('tenant_id', $tenant->id)
+            ->get()
+            ->filter(fn($unit) => $scopeService->canManage($actorMembership, $unit))
+            ->values();
+
+        $availableRoles = \App\Modules\Tenancy\Models\Role::where('tenant_id', $tenant->id)
+            ->get()
+            ->filter(function ($role) use ($actorMembership) {
+                $rolePermissions = $role->permissions()->pluck('slug')->toArray();
+                $actorPermissions = $actorMembership->roles->flatMap->permissions->pluck('slug')->unique()->toArray();
+                $missingPermissions = array_diff($rolePermissions, $actorPermissions);
+                return empty($missingPermissions);
+            })->values();
+
         return Inertia::render('Membership/Index', [
             'memberships' => $memberships,
+            'availableRoles' => $availableRoles,
+            'availableUnits' => $availableUnits,
         ]);
     }
 
@@ -99,5 +118,41 @@ class MembershipController extends Controller
         $this->statusService->reject($membership);
 
         return back()->with('flash', ['success' => 'Solicitação de acesso recusada.']);
+    }
+    public function storeManual(Request $request, \App\Modules\Tenancy\Services\AddManualMemberService $addService): RedirectResponse
+    {
+        Gate::authorize('create', Membership::class);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255'],
+            'role_id' => ['required', 'integer', 'exists:roles,id'],
+            'organization_unit_id' => ['nullable', 'integer', 'exists:organization_units,id'],
+        ]);
+
+        try {
+            $result = $addService->execute(
+                $validated['name'],
+                $validated['email'],
+                $validated['role_id'],
+                $validated['organization_unit_id'] ?? null
+            );
+
+            $message = $result['created_user']
+                ? 'Membro adicionado com sucesso. Um e-mail foi enviado para que a pessoa defina sua senha.'
+                : 'Membro adicionado com sucesso.';
+
+            return back()->with('flash', ['success' => $message]);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            if (request()->hasHeader('X-Inertia')) {
+                return back()->with('error', $e->getMessage());
+            }
+            abort($e->getStatusCode(), $e->getMessage());
+        } catch (\InvalidArgumentException $e) {
+            if (request()->hasHeader('X-Inertia')) {
+                return back()->with('error', $e->getMessage());
+            }
+            abort(400, $e->getMessage());
+        }
     }
 }

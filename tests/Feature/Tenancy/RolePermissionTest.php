@@ -257,4 +257,22 @@ class RolePermissionTest extends TestCase
 
         $this->assertEquals($initialCount, Permission::count());
     }
+
+    public function test_lower_authority_cannot_manage_permissions_of_superior_role()
+    {
+        [$user, $tenant, $role] = $this->createMemberWithPermission(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value);
+
+        $superiorRole = Role::create(['tenant_id' => $tenant->id, 'name' => 'Superior', 'slug' => 'superior']);
+        $superiorPermission = Permission::where('slug', PermissionSlug::MEMBERSHIPS_MANAGE->value)->first();
+        $superiorRole->permissions()->attach($superiorPermission->id);
+
+        $permissionToAttach = Permission::where('slug', PermissionSlug::SECRETARIAS_VIEW->value)->first();
+
+        // Actor has only ROLES_PERMISSIONS_MANAGE. SuperiorRole has MEMBERSHIPS_MANAGE.
+        // The actor's permissions are not a superset of SuperiorRole's permissions.
+        $response = $this->postJson("/roles/{$superiorRole->id}/permissions", [
+            'permission_id' => $permissionToAttach->id,
+        ]);
+        $response->assertStatus(403);
+    }
 }

@@ -8,6 +8,6 @@ class TenantSlugAlreadyExistsException extends RuntimeException
 {
     public function __construct(string $slug)
     {
-        parent::__construct("The tenant slug '{$slug}' already exists.");
+        parent::__construct("A identificação da organização '{$slug}' já está em uso.");
     }
 }

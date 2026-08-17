@@ -21,14 +21,40 @@ interface Membership {
     status: string;
 }
 
-interface PageProps {
-    memberships: Membership[];
+interface OrganizationUnit {
+    id: number;
+    name: string;
+    parent_id: number | null;
 }
 
-export default function Index({ memberships }: PageProps) {
+interface PageProps {
+    memberships: Membership[];
+    availableRoles: Role[];
+    availableUnits: OrganizationUnit[];
+}
+
+export default function Index({ memberships, availableRoles, availableUnits }: PageProps) {
     const { auth } = usePage<any>().props;
     const { patch } = useForm();
     const [activeTab, setActiveTab] = useState('active');
+
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const addForm = useForm({
+        name: '',
+        email: '',
+        role_id: '',
+        organization_unit_id: '',
+    });
+
+    const handleAddSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        addForm.post('/memberships/manual', {
+            onSuccess: () => {
+                setIsAddModalOpen(false);
+                addForm.reset();
+            },
+        });
+    };
 
     const handleActivate = (id: number) => {
         if (confirm('Tem certeza que deseja ativar este membro?')) {
@@ -65,14 +91,24 @@ export default function Index({ memberships }: PageProps) {
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                         Membros da Prefeitura
                     </h1>
-                    {auth.capabilities.includes('invitations.manage') && (
-                        <Link
-                            href="/invitations/create"
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            Convidar pessoa
-                        </Link>
-                    )}
+                    <div className="flex space-x-3">
+                        {auth.capabilities.includes('memberships.manage') && (
+                            <button
+                                onClick={() => setIsAddModalOpen(true)}
+                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            >
+                                Adicionar membro
+                            </button>
+                        )}
+                        {auth.capabilities.includes('invitations.manage') && (
+                            <Link
+                                href="/invitations/create"
+                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                                Convidar pessoa
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
                 <div className="mb-4 border-b border-gray-200 dark:border-gray-700">
@@ -219,6 +255,95 @@ export default function Index({ memberships }: PageProps) {
                     </div>
                 </div>
             </div>
+
+            {isAddModalOpen && (
+                <div className="fixed z-50 inset-0 overflow-y-auto">
+                    <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        <div className="fixed inset-0 bg-gray-500/75 transition-opacity" aria-hidden="true" onClick={() => setIsAddModalOpen(false)}></div>
+
+                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                        <div className="relative z-10 inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                            <form onSubmit={handleAddSubmit}>
+                                <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
+                                        Adicionar membro manualmente
+                                    </h3>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={addForm.data.name}
+                                                onChange={e => addForm.setData('name', e.target.value)}
+                                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                            />
+                                            {addForm.errors.name && <div className="text-red-500 text-xs mt-1">{addForm.errors.name}</div>}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">E-mail</label>
+                                            <input
+                                                type="email"
+                                                required
+                                                value={addForm.data.email}
+                                                onChange={e => addForm.setData('email', e.target.value)}
+                                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                            />
+                                            {addForm.errors.email && <div className="text-red-500 text-xs mt-1">{addForm.errors.email}</div>}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Função</label>
+                                            <select
+                                                required
+                                                value={addForm.data.role_id}
+                                                onChange={e => addForm.setData('role_id', e.target.value)}
+                                                className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                            >
+                                                <option value="">Selecione...</option>
+                                                {availableRoles.map(r => (
+                                                    <option key={r.id} value={r.id}>{r.name}</option>
+                                                ))}
+                                            </select>
+                                            {addForm.errors.role_id && <div className="text-red-500 text-xs mt-1">{addForm.errors.role_id}</div>}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Unidade Organizacional (Opcional)</label>
+                                            <select
+                                                value={addForm.data.organization_unit_id}
+                                                onChange={e => addForm.setData('organization_unit_id', e.target.value)}
+                                                className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                            >
+                                                <option value="">Acesso Global (Sem Unidade)</option>
+                                                {availableUnits.map(u => (
+                                                    <option key={u.id} value={u.id}>{u.name}</option>
+                                                ))}
+                                            </select>
+                                            {addForm.errors.organization_unit_id && <div className="text-red-500 text-xs mt-1">{addForm.errors.organization_unit_id}</div>}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                    <button
+                                        type="submit"
+                                        disabled={addForm.processing}
+                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                                    >
+                                        Adicionar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAddModalOpen(false)}
+                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

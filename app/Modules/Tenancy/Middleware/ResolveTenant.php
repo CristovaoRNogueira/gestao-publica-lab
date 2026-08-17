@@ -29,7 +29,7 @@ class ResolveTenant
 
         if (!$resolved) {
             $request->session()->forget('tenant_id');
-            abort(403, 'Unauthorized or invalid tenant.');
+            abort(403, 'Você não tem permissão para realizar esta ação.');
         }
 
         $this->context->set($resolved->tenant, $resolved->membership);

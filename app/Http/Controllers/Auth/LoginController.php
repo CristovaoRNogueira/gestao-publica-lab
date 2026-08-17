@@ -49,7 +49,7 @@ class LoginController extends Controller
 
         $this->selectTenantAfterLogin($request, $resolver);
 
-        return redirect()->intended('/dashboard');
+        return redirect()->intended('/dashboard')->with('success', 'Login realizado com sucesso.');
     }
 
     /**
