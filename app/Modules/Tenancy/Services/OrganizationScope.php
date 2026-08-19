@@ -4,6 +4,7 @@ namespace App\Modules\Tenancy\Services;
 
 use App\Modules\Tenancy\Models\Membership;
 use App\Modules\Tenancy\Models\OrganizationUnit;
+use App\Modules\Tenancy\Enums\PermissionSlug;
 
 class OrganizationScope
 {
@@ -15,12 +16,17 @@ class OrganizationScope
         if ($targetUnit === null) {
             return $this->hasGlobalScope($actor);
         }
+
         if (!$this->belongsToSameTenant($actor, $targetUnit)) {
             return false;
         }
 
         if ($this->hasGlobalScope($actor)) {
             return true;
+        }
+
+        if (is_null($actor->organization_unit_id)) {
+            return false; // Sem unidade e sem global scope
         }
 
         return $this->isSameOrDescendant($actor->organization_unit_id, $targetUnit);
@@ -35,11 +41,11 @@ class OrganizationScope
     }
 
     /**
-     * Verifica se o ator possui escopo global (sem lotação específica).
+     * Verifica se o ator possui escopo global.
      */
     public function hasGlobalScope(Membership $actor): bool
     {
-        return is_null($actor->organization_unit_id);
+        return $actor->hasPermission(PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value);
     }
 
     /**

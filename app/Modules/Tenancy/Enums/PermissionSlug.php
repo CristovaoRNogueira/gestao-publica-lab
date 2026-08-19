@@ -11,9 +11,13 @@ enum PermissionSlug: string
     case ROLES_UPDATE = 'roles.update';
     case ROLES_DELETE = 'roles.delete';
     case ROLES_PERMISSIONS_MANAGE = 'roles.permissions.manage';
-    case SECRETARIAS_VIEW = 'secretarias.view';
-    case SECRETARIAS_CREATE = 'secretarias.create';
-    case SECRETARIAS_UPDATE = 'secretarias.update';
+
+    case ORGANIZATION_UNITS_VIEW = 'organization_units.view';
+    case ORGANIZATION_UNITS_CREATE = 'organization_units.create';
+    case ORGANIZATION_UNITS_UPDATE = 'organization_units.update';
+    case ORGANIZATION_UNITS_DELETE = 'organization_units.delete';
+
+    case ORGANIZATION_SCOPE_GLOBAL = 'organization.scope.global';
 
     case INVITATIONS_VIEW = 'invitations.view';
     case INVITATIONS_MANAGE = 'invitations.manage';
@@ -30,9 +34,11 @@ enum PermissionSlug: string
             self::ROLES_UPDATE->value,
             self::ROLES_DELETE->value,
             self::ROLES_PERMISSIONS_MANAGE->value,
-            self::SECRETARIAS_VIEW->value,
-            self::SECRETARIAS_CREATE->value,
-            self::SECRETARIAS_UPDATE->value,
+            self::ORGANIZATION_UNITS_VIEW->value,
+            self::ORGANIZATION_UNITS_CREATE->value,
+            self::ORGANIZATION_UNITS_UPDATE->value,
+            self::ORGANIZATION_UNITS_DELETE->value,
+            self::ORGANIZATION_SCOPE_GLOBAL->value,
         ];
     }
 
@@ -46,9 +52,12 @@ enum PermissionSlug: string
             self::ROLES_UPDATE => 'Editar funções',
             self::ROLES_DELETE => 'Excluir funções',
             self::ROLES_PERMISSIONS_MANAGE => 'Alterar permissões das funções',
-            self::SECRETARIAS_VIEW => 'Visualizar secretarias',
-            self::SECRETARIAS_CREATE => 'Criar secretarias',
-            self::SECRETARIAS_UPDATE => 'Editar secretarias',
+
+            self::ORGANIZATION_UNITS_VIEW => 'Visualizar unidades',
+            self::ORGANIZATION_UNITS_CREATE => 'Criar unidades',
+            self::ORGANIZATION_UNITS_UPDATE => 'Editar unidades',
+            self::ORGANIZATION_UNITS_DELETE => 'Excluir unidades',
+            self::ORGANIZATION_SCOPE_GLOBAL => 'Escopo global no tenant',
             self::INVITATIONS_VIEW => 'Visualizar convites',
             self::INVITATIONS_MANAGE => 'Gerenciar convites',
         };
@@ -64,9 +73,12 @@ enum PermissionSlug: string
             self::ROLES_UPDATE => 'Permite atualizar os dados das funções.',
             self::ROLES_DELETE => 'Permite excluir funções.',
             self::ROLES_PERMISSIONS_MANAGE => 'Permite gerenciar as permissões atreladas a cada função.',
-            self::SECRETARIAS_VIEW => 'Permite visualizar a lista e os detalhes das secretarias.',
-            self::SECRETARIAS_CREATE => 'Permite criar novas secretarias.',
-            self::SECRETARIAS_UPDATE => 'Permite atualizar os dados das secretarias.',
+
+            self::ORGANIZATION_UNITS_VIEW => 'Permite visualizar a lista e os detalhes das unidades.',
+            self::ORGANIZATION_UNITS_CREATE => 'Permite criar novas unidades.',
+            self::ORGANIZATION_UNITS_UPDATE => 'Permite atualizar os dados ou mover as unidades.',
+            self::ORGANIZATION_UNITS_DELETE => 'Permite excluir unidades.',
+            self::ORGANIZATION_SCOPE_GLOBAL => 'Concede acesso administrativo em todo o Tenant, sem restrição por unidade.',
             self::INVITATIONS_VIEW => 'Permite visualizar a lista e detalhes dos convites.',
             self::INVITATIONS_MANAGE => 'Permite criar, revogar e reenviar convites.',
         };

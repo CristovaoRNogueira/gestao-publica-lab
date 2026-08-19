@@ -75,7 +75,7 @@ class RolePermissionTest extends TestCase
     public function test_attach_permission_works_and_is_idempotent()
     {
         [$user, $tenant, $role] = $this->createMemberWithPermission(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value);
-        $permissionToAttach = Permission::where('slug', PermissionSlug::SECRETARIAS_VIEW->value)->first();
+        $permissionToAttach = Permission::where('slug', PermissionSlug::ORGANIZATION_UNITS_VIEW->value)->first();
 
         // First attach
         $response = $this->post("/roles/{$role->id}/permissions", [
@@ -95,7 +95,7 @@ class RolePermissionTest extends TestCase
     public function test_attach_permission_without_authorization_returns_403()
     {
         [$user, $tenant, $role] = $this->createMemberWithPermission(PermissionSlug::ROLES_VIEW->value);
-        $permissionToAttach = Permission::where('slug', PermissionSlug::SECRETARIAS_VIEW->value)->first();
+        $permissionToAttach = Permission::where('slug', PermissionSlug::ORGANIZATION_UNITS_VIEW->value)->first();
 
         $response = $this->postJson("/roles/{$role->id}/permissions", [
             'permission_id' => $permissionToAttach->id,
@@ -139,7 +139,7 @@ class RolePermissionTest extends TestCase
     public function test_non_critical_permission_can_still_be_managed_according_to_existing_rules()
     {
         [$user, $tenant, $role] = $this->createMemberWithPermission(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value);
-        $nonCriticalPermission = Permission::where('slug', PermissionSlug::SECRETARIAS_VIEW->value)->first();
+        $nonCriticalPermission = Permission::where('slug', PermissionSlug::ORGANIZATION_UNITS_VIEW->value)->first();
 
         $response = $this->post("/roles/{$role->id}/permissions", [
             'permission_id' => $nonCriticalPermission->id,
@@ -166,7 +166,7 @@ class RolePermissionTest extends TestCase
 
         $otherTenant = Tenant::create(['name' => 'Tenant B', 'slug' => 'tenant-b']);
         $otherRole = Role::create(['tenant_id' => $otherTenant->id, 'name' => 'Other Role', 'slug' => 'other-role']);
-        $permissionToAttach = Permission::where('slug', PermissionSlug::SECRETARIAS_VIEW->value)->first();
+        $permissionToAttach = Permission::where('slug', PermissionSlug::ORGANIZATION_UNITS_VIEW->value)->first();
 
         $response = $this->postJson("/roles/{$otherRole->id}/permissions", [
             'permission_id' => $permissionToAttach->id,
@@ -195,7 +195,7 @@ class RolePermissionTest extends TestCase
     public function test_detach_permission_works()
     {
         [$user, $tenant, $role] = $this->createMemberWithPermission(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value);
-        $permissionToAttach = Permission::where('slug', PermissionSlug::SECRETARIAS_VIEW->value)->first();
+        $permissionToAttach = Permission::where('slug', PermissionSlug::ORGANIZATION_UNITS_VIEW->value)->first();
         $role->permissions()->attach($permissionToAttach->id);
 
         $response = $this->delete("/roles/{$role->id}/permissions/{$permissionToAttach->id}");
@@ -207,7 +207,7 @@ class RolePermissionTest extends TestCase
     public function test_detach_unbound_permission_returns_404()
     {
         [$user, $tenant, $role] = $this->createMemberWithPermission(PermissionSlug::ROLES_PERMISSIONS_MANAGE->value);
-        $permissionNotAttached = Permission::where('slug', PermissionSlug::SECRETARIAS_VIEW->value)->first();
+        $permissionNotAttached = Permission::where('slug', PermissionSlug::ORGANIZATION_UNITS_VIEW->value)->first();
 
         $response = $this->deleteJson("/roles/{$role->id}/permissions/{$permissionNotAttached->id}");
         $response->assertStatus(404);
@@ -266,7 +266,7 @@ class RolePermissionTest extends TestCase
         $superiorPermission = Permission::where('slug', PermissionSlug::MEMBERSHIPS_MANAGE->value)->first();
         $superiorRole->permissions()->attach($superiorPermission->id);
 
-        $permissionToAttach = Permission::where('slug', PermissionSlug::SECRETARIAS_VIEW->value)->first();
+        $permissionToAttach = Permission::where('slug', PermissionSlug::ORGANIZATION_UNITS_VIEW->value)->first();
 
         // Actor has only ROLES_PERMISSIONS_MANAGE. SuperiorRole has MEMBERSHIPS_MANAGE.
         // The actor's permissions are not a superset of SuperiorRole's permissions.

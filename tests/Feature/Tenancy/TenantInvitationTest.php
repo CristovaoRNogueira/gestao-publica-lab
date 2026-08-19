@@ -33,6 +33,7 @@ class TenantInvitationTest extends TestCase
         $permissions = \App\Modules\Tenancy\Models\Permission::whereIn('slug', [
             PermissionSlug::INVITATIONS_VIEW->value,
             PermissionSlug::INVITATIONS_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
         ])->pluck('id');
         $role->permissions()->sync($permissions);
         $membership->roles()->sync([$role->id]);

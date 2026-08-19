@@ -61,8 +61,8 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware(['auth', \App\Modules\Tenancy\Middleware\ResolveTenant::class])->group(function () {
-        Route::resource('secretarias', \App\Modules\Secretaria\Http\Controllers\SecretariaController::class)
-            ->only(['index', 'create', 'store', 'edit', 'update']);
+        Route::resource('organization-units', \App\Modules\Tenancy\Http\Controllers\OrganizationUnitController::class)
+            ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
         Route::resource('memberships', \App\Modules\Tenancy\Http\Controllers\MembershipController::class)
             ->only(['index', 'edit']);

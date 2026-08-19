@@ -2,38 +2,39 @@ import { Head, useForm, Link } from '@inertiajs/react';
 import { AppLayout } from '../../layouts/AppLayout';
 import { Button } from '../../components/ui/Button';
 
-interface Secretaria {
+interface OrganizationUnit {
     id: number;
+    parent_id: number | null;
     name: string;
     slug: string;
-    description: string | null;
+    type: string;
     is_active: boolean;
 }
 
 interface PageProps {
-    secretaria: Secretaria;
+    units: OrganizationUnit[];
 }
 
-export default function Edit({ secretaria }: PageProps) {
-    const { data, setData, put, processing, errors } = useForm({
-        name: secretaria.name,
-        description: secretaria.description || '',
-        is_active: secretaria.is_active,
+export default function Create({ units }: PageProps) {
+    const { data, setData, post, processing, errors } = useForm({
+        name: '',
+        type: '',
+        parent_id: '' as string | number,
     });
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        put(`/secretarias/${secretaria.id}`);
+        post('/organization-units');
     }
 
     return (
         <>
-            <Head title="Editar Secretaria" />
+            <Head title="Nova Unidade" />
 
             <div className="max-w-2xl mx-auto">
                 <div className="mb-6 flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        Editar Secretaria
+                        Nova Unidade
                     </h1>
                 </div>
 
@@ -42,7 +43,7 @@ export default function Edit({ secretaria }: PageProps) {
                         <div className="px-4 py-5 sm:p-6 space-y-6">
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Nome
+                                    Nome da Unidade
                                 </label>
                                 <input
                                     id="name"
@@ -55,39 +56,48 @@ export default function Edit({ secretaria }: PageProps) {
                             </div>
 
                             <div>
-                                <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Descrição
+                                <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Tipo / Sigla (Opcional)
                                 </label>
-                                <textarea
-                                    id="description"
-                                    value={data.description}
-                                    onChange={(e) => setData('description', e.target.value)}
-                                    rows={3}
+                                <input
+                                    id="type"
+                                    type="text"
+                                    placeholder="Ex: Secretaria, Departamento, Diretoria..."
+                                    value={data.type}
+                                    onChange={(e) => setData('type', e.target.value)}
                                     className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-white"
                                 />
-                                {errors.description && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.description}</p>}
+                                {errors.type && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.type}</p>}
                             </div>
 
-                            <div className="flex items-center">
-                                <input
-                                    id="is_active"
-                                    type="checkbox"
-                                    checked={data.is_active}
-                                    onChange={(e) => setData('is_active', e.target.checked)}
-                                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600"
-                                />
-                                <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
-                                    Ativo
+                            <div>
+                                <label htmlFor="parent_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Unidade Pai (Hierarquia)
                                 </label>
+                                <select
+                                    id="parent_id"
+                                    value={data.parent_id}
+                                    onChange={(e) => setData('parent_id', e.target.value)}
+                                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-white"
+                                >
+                                    <option value="">-- Nenhuma (Raiz) --</option>
+                                    {units.map((unit) => (
+                                        <option key={unit.id} value={unit.id}>
+                                            {unit.name} ({unit.type})
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.parent_id && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.parent_id}</p>}
                             </div>
+
                         </div>
 
                         <div className="bg-gray-50 dark:bg-gray-700/50 px-4 py-3 sm:px-6 flex justify-end space-x-3">
-                            <Link href="/secretarias">
+                            <Link href="/organization-units">
                                 <Button variant="secondary" type="button">Cancelar</Button>
                             </Link>
                             <Button type="submit" disabled={processing}>
-                                Salvar Alterações
+                                Salvar
                             </Button>
                         </div>
                     </form>
@@ -97,4 +107,4 @@ export default function Edit({ secretaria }: PageProps) {
     );
 }
 
-Edit.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;
+Create.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

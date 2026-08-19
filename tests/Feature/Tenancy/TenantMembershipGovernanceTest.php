@@ -40,7 +40,7 @@ class TenantMembershipGovernanceTest extends TestCase
     public function test_user_with_invitations_manage_cannot_invite_admin_role()
     {
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't1', 'is_active' => true]);
-        $inviter = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::INVITATIONS_MANAGE->value]);
+        $inviter = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::INVITATIONS_MANAGE->value, PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value]);
 
         // Admin role requiring MEMBERSHIPS_ROLES_MANAGE
         $adminRole = Role::create(['name' => 'Admin', 'slug' => 'admin-1', 'tenant_id' => $tenant->id]);
@@ -63,6 +63,7 @@ class TenantMembershipGovernanceTest extends TestCase
         $inviter = $this->createTenantUserWithPermissions($tenant, [
             PermissionSlug::INVITATIONS_MANAGE->value,
             PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value,
         ]);
 
         $adminRole = Role::create(['name' => 'Admin', 'slug' => 'admin-2', 'tenant_id' => $tenant->id]);
@@ -82,7 +83,7 @@ class TenantMembershipGovernanceTest extends TestCase
     public function test_common_role_invitation_remains_allowed()
     {
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't3', 'is_active' => true]);
-        $inviter = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::INVITATIONS_MANAGE->value]);
+        $inviter = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::INVITATIONS_MANAGE->value, PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value]);
 
         $commonRole = Role::create(['name' => 'Common', 'slug' => 'common-1', 'tenant_id' => $tenant->id]);
 
@@ -111,7 +112,10 @@ class TenantMembershipGovernanceTest extends TestCase
     public function test_authorized_admin_can_deactivate_ordinary_member()
     {
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't5', 'is_active' => true]);
-        $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_MANAGE->value]);
+        $admin = $this->createTenantUserWithPermissions($tenant, [
+            PermissionSlug::MEMBERSHIPS_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
+        ]);
         $target = $this->createTenantUserWithPermissions($tenant, []);
         $targetMembership = Membership::where('user_id', $target->id)->first();
 
@@ -127,7 +131,10 @@ class TenantMembershipGovernanceTest extends TestCase
     public function test_authorized_admin_can_reactivate_member()
     {
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't6', 'is_active' => true]);
-        $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_MANAGE->value]);
+        $admin = $this->createTenantUserWithPermissions($tenant, [
+            PermissionSlug::MEMBERSHIPS_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
+        ]);
         $target = $this->createTenantUserWithPermissions($tenant, []);
         $targetMembership = Membership::where('user_id', $target->id)->first();
         $targetMembership->update(['status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
@@ -144,7 +151,10 @@ class TenantMembershipGovernanceTest extends TestCase
     public function test_cannot_deactivate_self()
     {
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't7', 'is_active' => true]);
-        $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_MANAGE->value]);
+        $admin = $this->createTenantUserWithPermissions($tenant, [
+            PermissionSlug::MEMBERSHIPS_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
+        ]);
         $membership = Membership::where('user_id', $admin->id)->first();
 
         $this->actingAs($admin);
@@ -156,7 +166,10 @@ class TenantMembershipGovernanceTest extends TestCase
     public function test_cannot_change_own_role()
     {
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't8', 'is_active' => true]);
-        $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
+        $admin = $this->createTenantUserWithPermissions($tenant, [
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
+        ]);
         $membership = Membership::where('user_id', $admin->id)->first();
         $newRole = Role::create(['name' => 'New', 'slug' => 'new-role', 'tenant_id' => $tenant->id]);
 
@@ -176,14 +189,16 @@ class TenantMembershipGovernanceTest extends TestCase
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't9', 'is_active' => true]);
         $admin1 = $this->createTenantUserWithPermissions($tenant, [
             PermissionSlug::MEMBERSHIPS_MANAGE->value,
-            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
         ]);
         // To deactivate someone else, we need another admin. But we want to deactivate the last admin.
         // So admin1 tries to deactivate admin2, but admin2 is the only one with MEMBERSHIPS_ROLES_MANAGE?
         // No, if admin1 has it, then admin1 is ALSO an admin.
         $admin2 = $this->createTenantUserWithPermissions($tenant, [
             PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
-            PermissionSlug::MEMBERSHIPS_MANAGE->value
+            PermissionSlug::MEMBERSHIPS_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
         ]);
 
         $admin1Membership = Membership::where('user_id', $admin1->id)->first();
@@ -222,10 +237,12 @@ class TenantMembershipGovernanceTest extends TestCase
 
         $adminA = $this->createTenantUserWithPermissions($tenant, [
             PermissionSlug::MEMBERSHIPS_MANAGE->value,
-            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
         ]);
         $adminB = $this->createTenantUserWithPermissions($tenant, [
-            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
         ]);
 
         $adminBMembership = Membership::where('user_id', $adminB->id)->first();
@@ -266,7 +283,8 @@ class TenantMembershipGovernanceTest extends TestCase
 
         $admin = $this->createTenantUserWithPermissions($tenant, [
             PermissionSlug::MEMBERSHIPS_MANAGE->value,
-            PermissionSlug::ROLES_VIEW->value
+            PermissionSlug::ROLES_VIEW->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
         ]);
         $this->actingAs($admin);
         session(['tenant_id' => $tenant->id]);
@@ -281,7 +299,10 @@ class TenantMembershipGovernanceTest extends TestCase
     public function test_pending_membership_cannot_manage_roles()
     {
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't13', 'is_active' => true]);
-        $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
+        $admin = $this->createTenantUserWithPermissions($tenant, [
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
+        ]);
         $target = $this->createTenantUserWithPermissions($tenant, []);
         $targetMembership = Membership::where('user_id', $target->id)->first();
         $targetMembership->update(['status' => \App\Modules\Tenancy\Models\Membership::STATUS_PENDING]);
@@ -295,7 +316,10 @@ class TenantMembershipGovernanceTest extends TestCase
     public function test_rejected_membership_cannot_manage_roles()
     {
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't14', 'is_active' => true]);
-        $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
+        $admin = $this->createTenantUserWithPermissions($tenant, [
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
+        ]);
         $target = $this->createTenantUserWithPermissions($tenant, []);
         $targetMembership = Membership::where('user_id', $target->id)->first();
         $targetMembership->update(['status' => \App\Modules\Tenancy\Models\Membership::STATUS_REJECTED]);
@@ -309,7 +333,10 @@ class TenantMembershipGovernanceTest extends TestCase
     public function test_pending_membership_cannot_be_activated_via_endpoint_antigo()
     {
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't15', 'is_active' => true]);
-        $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_MANAGE->value]);
+        $admin = $this->createTenantUserWithPermissions($tenant, [
+            PermissionSlug::MEMBERSHIPS_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
+        ]);
         $target = $this->createTenantUserWithPermissions($tenant, []);
         $targetMembership = Membership::where('user_id', $target->id)->first();
         $targetMembership->update(['status' => \App\Modules\Tenancy\Models\Membership::STATUS_PENDING]);
@@ -323,7 +350,10 @@ class TenantMembershipGovernanceTest extends TestCase
     public function test_active_membership_continua_funcionando()
     {
         $tenant = Tenant::create(['name' => 'Test', 'slug' => 't16', 'is_active' => true]);
-        $admin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value]);
+        $admin = $this->createTenantUserWithPermissions($tenant, [
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
+        ]);
         $target = $this->createTenantUserWithPermissions($tenant, []);
         $targetMembership = Membership::where('user_id', $target->id)->first();
 
@@ -339,7 +369,8 @@ class TenantMembershipGovernanceTest extends TestCase
         $subAdmin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_MANAGE->value]);
         $superiorAdmin = $this->createTenantUserWithPermissions($tenant, [
             PermissionSlug::MEMBERSHIPS_MANAGE->value,
-            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
         ]);
         $superiorMembership = Membership::where('user_id', $superiorAdmin->id)->first();
 
@@ -355,7 +386,8 @@ class TenantMembershipGovernanceTest extends TestCase
         $subAdmin = $this->createTenantUserWithPermissions($tenant, [PermissionSlug::MEMBERSHIPS_MANAGE->value]);
         $superiorAdmin = $this->createTenantUserWithPermissions($tenant, [
             PermissionSlug::MEMBERSHIPS_MANAGE->value,
-            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value
+            PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
         ]);
         $superiorMembership = Membership::where('user_id', $superiorAdmin->id)->first();
         $superiorMembership->update(['status' => Membership::STATUS_INACTIVE]);
@@ -375,7 +407,8 @@ class TenantMembershipGovernanceTest extends TestCase
         // Superior admin has more permissions than sub admin
         $superiorAdmin = $this->createTenantUserWithPermissions($tenant, [
             PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value,
-            PermissionSlug::ROLES_VIEW->value
+            PermissionSlug::ROLES_VIEW->value,
+            PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value
         ]);
         $superiorMembership = Membership::where('user_id', $superiorAdmin->id)->first();
 

@@ -28,6 +28,7 @@ class TenantManualMemberAdditionTest extends TestCase
     private User $globalAdminUser;
     private Membership $globalAdminMembership;
     private Role $adminRole;
+    private Role $localAdminRole;
     private Role $memberRole;
 
     protected function setUp(): void
@@ -52,7 +53,15 @@ class TenantManualMemberAdditionTest extends TestCase
         ]);
         $permissionId1 = \App\Modules\Tenancy\Models\Permission::where('slug', PermissionSlug::MEMBERSHIPS_MANAGE->value)->first()->id;
         $permissionId2 = \App\Modules\Tenancy\Models\Permission::where('slug', PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value)->first()->id;
-        $this->adminRole->permissions()->attach([$permissionId1, $permissionId2]);
+        $permissionId3 = \App\Modules\Tenancy\Models\Permission::where('slug', PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value)->first()->id;
+        $this->adminRole->permissions()->attach([$permissionId1, $permissionId2, $permissionId3]);
+
+        $this->localAdminRole = Role::create([
+            'tenant_id' => $this->tenant->id,
+            'name' => 'Admin Local',
+            'slug' => 'admin-local-1',
+        ]);
+        $this->localAdminRole->permissions()->attach([$permissionId1, $permissionId2]);
 
         $this->memberRole = Role::create([
             'tenant_id' => $this->tenant->id,
@@ -291,7 +300,7 @@ class TenantManualMemberAdditionTest extends TestCase
         $localMembership = Membership::create([
             'tenant_id' => $this->tenant->id, 'user_id' => $localAdmin->id, 'status' => Membership::STATUS_ACTIVE, 'organization_unit_id' => $targetUnit->id,
         ]);
-        $localMembership->roles()->attach($this->adminRole->id);
+        $localMembership->roles()->attach($this->localAdminRole->id);
 
         // Same unit -> Allowed
         $this->actingAs($localAdmin)->withSession(['tenant_id' => $this->tenant->id])
