@@ -22,4 +22,22 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        $exceptions->render(function (\Throwable $e, Request $request) {
+            if ($request->header('X-Inertia')) {
+                if ($e instanceof \Illuminate\Auth\Access\AuthorizationException) {
+                    $msg = $e->getMessage() === 'This action is unauthorized.' ? 'Acesso negado.' : $e->getMessage();
+                    return \Inertia\Inertia::render('AccessDenied', ['message' => $msg])
+                        ->toResponse($request)
+                        ->setStatusCode(403);
+                }
+
+                if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface && $e->getStatusCode() === 403) {
+                    $msg = $e->getMessage() ?: 'Acesso negado.';
+                    return \Inertia\Inertia::render('AccessDenied', ['message' => $msg])
+                        ->toResponse($request)
+                        ->setStatusCode(403);
+                }
+            }
+        });
     })->create();

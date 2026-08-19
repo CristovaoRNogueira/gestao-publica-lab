@@ -1,7 +1,11 @@
 import { Head } from '@inertiajs/react';
 import { AppLayout } from '../layouts/AppLayout';
 
-export default function AccessDenied() {
+interface Props {
+    message?: string;
+}
+
+export default function AccessDenied({ message }: Props) {
     return (
         <>
             <Head title="Acesso Indisponível" />
@@ -21,7 +25,7 @@ export default function AccessDenied() {
                             <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                                 <p>Seu acesso está indisponível.</p>
                                 <p className="mt-1">
-                                    Sua conta existe, mas você não possui atualmente nenhuma organização com acesso ativo.
+                                    {message || 'Sua conta existe, mas você não possui atualmente nenhuma organização com acesso ativo.'}
                                 </p>
                             </div>
                         </div>

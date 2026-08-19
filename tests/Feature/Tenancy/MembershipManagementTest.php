@@ -66,6 +66,7 @@ class MembershipManagementTest extends TestCase
         $userA = User::factory()->create();
         $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenantA, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
+        $this->grantPermission($tenantA, $membershipA, PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value);
 
         $userB = User::factory()->create();
         Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userB->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
@@ -119,6 +120,7 @@ class MembershipManagementTest extends TestCase
         $userA = User::factory()->create();
         $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenantA, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
+        $this->grantPermission($tenantA, $membershipA, PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value);
 
         $userB = User::factory()->create();
         $membershipB = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userB->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
@@ -147,6 +149,7 @@ class MembershipManagementTest extends TestCase
         $userA = User::factory()->create();
         $membershipA = Membership::create(['tenant_id' => $tenantA->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenantA, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
+        $this->grantPermission($tenantA, $membershipA, PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value);
 
         $userB = User::factory()->create();
         $membershipB = Membership::create(['tenant_id' => $tenantB->id, 'user_id' => $userB->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
@@ -168,6 +171,7 @@ class MembershipManagementTest extends TestCase
         $userA = User::factory()->create();
         $membershipA = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenant, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
+        $this->grantPermission($tenant, $membershipA, PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value);
 
         $userB = User::factory()->create();
         $membershipB = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userB->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
@@ -188,6 +192,7 @@ class MembershipManagementTest extends TestCase
         $userA = User::factory()->create();
         $membershipA = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenant, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
+        $this->grantPermission($tenant, $membershipA, PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value);
 
         $userB = User::factory()->create();
         $membershipB = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userB->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_INACTIVE]);
@@ -208,6 +213,7 @@ class MembershipManagementTest extends TestCase
         $userA = User::factory()->create();
         $membershipA = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $this->grantPermission($tenant, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
+        $this->grantPermission($tenant, $membershipA, PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value);
 
         $userB = User::factory()->create();
         $membershipB = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userB->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
@@ -229,6 +235,7 @@ class MembershipManagementTest extends TestCase
         $userA = User::factory()->create();
         $membershipA = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $userA->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
         $adminRole = $this->grantPermission($tenant, $membershipA, PermissionSlug::MEMBERSHIPS_ROLES_MANAGE->value);
+        $this->grantPermission($tenant, $membershipA, PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value);
 
         $response = $this->actingAs($userA)
             ->withSession(['tenant_id' => $tenant->id])

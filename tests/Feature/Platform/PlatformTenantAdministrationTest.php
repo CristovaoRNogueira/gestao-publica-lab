@@ -124,7 +124,7 @@ class PlatformTenantAdministrationTest extends TestCase
         ]);
 
         // Tenant context request fails (ResolveTenant aborts 403)
-        $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])->get('/secretarias')->assertStatus(403);
+        $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])->get('/organization-units')->assertStatus(403);
     }
 
     public function test_avoids_n_plus_one()

@@ -58,7 +58,7 @@ class CreateTenantServiceTest extends TestCase
         // Global permissions exist
         $expectedSlugs = PermissionSlug::defaultAdminSlugs();
         $permissions = Permission::whereIn('slug', $expectedSlugs)->get();
-        $this->assertEquals(12, $permissions->count());
+        $this->assertEquals(14, $permissions->count());
 
         // Role has permissions
         foreach ($permissions as $permission) {

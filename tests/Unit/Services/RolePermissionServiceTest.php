@@ -30,7 +30,7 @@ class RolePermissionServiceTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'A', 'slug' => 'a']);
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Role', 'slug' => 'role']);
-        $permission = Permission::where('slug', PermissionSlug::SECRETARIAS_VIEW->value)->first();
+        $permission = Permission::where('slug', PermissionSlug::ORGANIZATION_UNITS_VIEW->value)->first();
 
         $this->service->attachPermission($role, $permission);
         $this->assertEquals(1, $role->permissions()->count());
@@ -44,7 +44,7 @@ class RolePermissionServiceTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'A', 'slug' => 'a']);
         $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Role', 'slug' => 'role']);
-        $permission = Permission::where('slug', PermissionSlug::SECRETARIAS_VIEW->value)->first();
+        $permission = Permission::where('slug', PermissionSlug::ORGANIZATION_UNITS_VIEW->value)->first();
 
         $role->permissions()->attach($permission->id);
 

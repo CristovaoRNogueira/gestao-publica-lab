@@ -180,36 +180,4 @@ class MembershipTest extends TestCase
         $this->assertEquals($data['tenant_id'], $data['membership_tenant_id']);
     }
 
-    // -------------------------------------------------------------------------
-    // Regressão — SecretariaPolicy continua funcionando sem RBAC
-    // -------------------------------------------------------------------------
-
-    private function grantPermission(Tenant $tenant, Membership $membership, string $permissionSlug): void
-    {
-        $role = \App\Modules\Tenancy\Models\Role::firstOrCreate(['tenant_id' => $tenant->id, 'name' => 'Admin', 'slug' => 'admin']);
-        $permission = \App\Modules\Tenancy\Models\Permission::firstOrCreate(['name' => $permissionSlug, 'slug' => $permissionSlug]);
-        if (!$role->permissions->contains($permission->id)) {
-            $role->permissions()->attach($permission);
-        }
-        if (!$membership->roles->contains($role->id)) {
-            $membership->roles()->attach($role);
-        }
-        $membership->load('roles.permissions');
-    }
-
-    public function test_secretaria_policy_with_rbac_applied(): void
-    {
-        $tenant = Tenant::create(['name' => 'Policy', 'slug' => 'policy', 'is_active' => true]);
-        $user = User::factory()->create();
-        $membership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => $user->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
-
-        $this->grantPermission($tenant, $membership, PermissionSlug::SECRETARIAS_VIEW->value);
-
-        // viewAny should work with permission
-        $response = $this->actingAs($user)
-            ->withSession(['tenant_id' => $tenant->id])
-            ->get('/secretarias');
-
-        $response->assertStatus(200);
-    }
 }

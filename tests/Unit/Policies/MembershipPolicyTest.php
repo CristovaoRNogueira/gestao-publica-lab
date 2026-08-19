@@ -51,6 +51,7 @@ class MembershipPolicyTest extends TestCase
 
         $targetMembership = Membership::create(['tenant_id' => $tenant->id, 'user_id' => User::factory()->create()->id, 'status' => \App\Modules\Tenancy\Models\Membership::STATUS_ACTIVE]);
 
+        $this->grantPermission($tenant, $membership, PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value);
         $this->assertTrue($this->policy->assignRole($user, $targetMembership));
     }
 

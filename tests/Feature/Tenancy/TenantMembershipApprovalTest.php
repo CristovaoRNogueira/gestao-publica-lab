@@ -17,7 +17,9 @@ class TenantMembershipApprovalTest extends TestCase
 
     private Tenant $tenant;
     private User $globalAdminUser;
+    private Membership $globalAdminMembership;
     private Role $adminRole;
+    private Role $localAdminRole;
 
     protected function setUp(): void
     {
@@ -32,16 +34,24 @@ class TenantMembershipApprovalTest extends TestCase
             'slug' => 'admin-global-1',
         ]);
         $permissionId = \App\Modules\Tenancy\Models\Permission::where('slug', PermissionSlug::MEMBERSHIPS_MANAGE->value)->first()->id;
-        $this->adminRole->permissions()->attach($permissionId);
+        $globalScopeId = \App\Modules\Tenancy\Models\Permission::where('slug', PermissionSlug::ORGANIZATION_SCOPE_GLOBAL->value)->first()->id;
+        $this->adminRole->permissions()->attach([$permissionId, $globalScopeId]);
 
         $this->globalAdminUser = User::factory()->create();
-        $globalAdminMembership = Membership::create([
+        $this->globalAdminMembership = Membership::create([
             'tenant_id' => $this->tenant->id,
             'user_id' => $this->globalAdminUser->id,
             'status' => Membership::STATUS_ACTIVE,
             'organization_unit_id' => null,
         ]);
-        $globalAdminMembership->roles()->attach($this->adminRole->id);
+        $this->globalAdminMembership->roles()->attach($this->adminRole->id);
+
+        $this->localAdminRole = Role::create([
+            'tenant_id' => $this->tenant->id,
+            'name' => 'Admin Local',
+            'slug' => 'admin-local-1',
+        ]);
+        $this->localAdminRole->permissions()->attach($permissionId);
     }
 
     private function createPendingMembership(?int $unitId = null): Membership
@@ -90,7 +100,7 @@ class TenantMembershipApprovalTest extends TestCase
             'status' => Membership::STATUS_ACTIVE,
             'organization_unit_id' => $unit->id,
         ]);
-        $localAdminMembership->roles()->attach($this->adminRole->id);
+        $localAdminMembership->roles()->attach($this->localAdminRole->id);
 
         $pending = $this->createPendingMembership($unit->id);
 
@@ -114,7 +124,7 @@ class TenantMembershipApprovalTest extends TestCase
             'status' => Membership::STATUS_ACTIVE,
             'organization_unit_id' => $unit->id,
         ]);
-        $localAdminMembership->roles()->attach($this->adminRole->id);
+        $localAdminMembership->roles()->attach($this->localAdminRole->id);
 
         $pending = $this->createPendingMembership($childUnit->id);
 
@@ -138,7 +148,7 @@ class TenantMembershipApprovalTest extends TestCase
             'status' => Membership::STATUS_ACTIVE,
             'organization_unit_id' => $childUnit->id,
         ]);
-        $localAdminMembership->roles()->attach($this->adminRole->id);
+        $localAdminMembership->roles()->attach($this->localAdminRole->id);
 
         $pending = $this->createPendingMembership($unit->id);
 
@@ -163,7 +173,7 @@ class TenantMembershipApprovalTest extends TestCase
             'status' => Membership::STATUS_ACTIVE,
             'organization_unit_id' => $unit1->id,
         ]);
-        $localAdminMembership->roles()->attach($this->adminRole->id);
+        $localAdminMembership->roles()->attach($this->localAdminRole->id);
 
         $pending = $this->createPendingMembership($unit2->id);
 
@@ -219,7 +229,7 @@ class TenantMembershipApprovalTest extends TestCase
             'status' => Membership::STATUS_ACTIVE,
             'organization_unit_id' => $unit->id,
         ]);
-        $localAdminMembership->roles()->attach($this->adminRole->id);
+        $localAdminMembership->roles()->attach($this->localAdminRole->id);
 
         $pendingGlobal = $this->createPendingMembership(null);
 
